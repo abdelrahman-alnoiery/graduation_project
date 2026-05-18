@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/cache/shared_pref.dart';
+import '../../../../core/utils/constants_manager.dart';
 import '../../domin/usecases/login_usecase.dart';
 import '../../domin/usecases/signUp_usecase.dart';
 import 'auth_event.dart';
@@ -46,7 +48,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (failure) => emit(SignInErrorState(failure)),
-      (user) => emit(SignInSuccessState(user)),
+      (user) {
+        SharedPref.setString(AppConstants.userToken, user.token??"");
+            emit(SignInSuccessState(user));}
     );
   }
 

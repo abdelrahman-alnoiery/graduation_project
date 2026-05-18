@@ -12,7 +12,7 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
   Future<bool> _checkHealth() async {
     try {
       final dio = AiDioFactory.getDio();
-      final response = await dio.get(EndPoints.aiHealth);
+      final response = await dio.get("${EndPoints.aiBaseUrl}${EndPoints.aiHealth}");
       return response.statusCode == 200;
     } catch (e) {
       return false;
@@ -52,7 +52,7 @@ class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
           ),
         });
 
-        final response = await dio.post(EndPoints.aiPredict, data: formData);
+        final response = await dio.post("${EndPoints.aiBaseUrl}${EndPoints.aiPredict}", data: formData);
 
         // ✅ طباعة الـ response
         print('AI Response Status: ${response.statusCode}');
