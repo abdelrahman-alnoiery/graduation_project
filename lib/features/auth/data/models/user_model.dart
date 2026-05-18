@@ -8,48 +8,35 @@ class UserModel extends UserEntity {
     required super.email,
     required super.phone,
     super.token,
+    super.role,
   });
 
-  // ── From Json ─────────────────────────────────────
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // ✅ الـ Backend بيرجع { user, token } أو { status, user }
+    final user = json['user'] ?? json;
+    final token = json['token'];
+
+    final username = user['username']?.toString() ?? '';
+    final parts = username.split(' ');
+
     return UserModel(
-      id: json['id'] ?? '',
-      firstName: json['first_name'] ?? '',
-      lastName: json['last_name'] ?? '',
-      email: json['email'] ?? '',
-      phone: json['phone'] ?? '',
-      token: json['token'],
+      id: user['_id']?.toString() ?? '',
+      firstName: parts.isNotEmpty ? parts.first : '',
+      lastName: parts.length > 1 ? parts.last : '',
+      email: user['email']?.toString() ?? '',
+      phone: user['phone']?.toString() ?? '',
+      token: token?.toString(),
+      role: user['role']?.toString() ?? 'seller',
     );
   }
 
-  // ── To Json ───────────────────────────────────────
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'first_name': firstName,
-      'last_name': lastName,
+      '_id': id,
+      'username': '$firstName $lastName'.trim(),
       'email': email,
       'phone': phone,
-      'token': token,
+      'role': role,
     };
-  }
-
-  // ── Copy With ─────────────────────────────────────
-  UserModel copyWith({
-    String? id,
-    String? firstName,
-    String? lastName,
-    String? email,
-    String? phone,
-    String? token,
-  }) {
-    return UserModel(
-      id: id ?? this.id,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
-      email: email ?? this.email,
-      phone: phone ?? this.phone,
-      token: token ?? this.token,
-    );
   }
 }

@@ -36,20 +36,26 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String phone,
   }) async {
     try {
+      print('SignUp Request: ${EndPoints.baseUrl}${EndPoints.signUp}'); // ✅
       final response = await ApiManager.post(
         EndPoints.signUp,
         body: {
-          "first_name": firstName,
-          "last_name": lastName,
+          "username": "$firstName $lastName", // ✅ Backend بياخد username
           "email": email,
           "password": password,
-          "phone": phone,
+          "role": "seller",
         },
       );
+      print('SignUp Response: ${response.data}'); // ✅
       return UserModel.fromJson(response.data);
     } on DioException catch (e) {
+      print('SignUp DioError: ${e.message}'); // ✅
+      print('SignUp DioResponse: ${e.response?.data}'); // ✅
+      print('SignUp DioStatus: ${e.response?.statusCode}'); // ✅
       throw NetworkException.fromDioError(e);
     } catch (e) {
+      print('SignUp Error: $e'); // ✅
+
       throw NetworkException(message: e.toString());
     }
   }

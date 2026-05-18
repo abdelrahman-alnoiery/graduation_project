@@ -1,7 +1,5 @@
 import 'package:dio/dio.dart';
 
-import '../api/status_codes.dart';
-
 class AppException implements Exception {
   final String message;
   final int? statusCode;
@@ -16,35 +14,43 @@ class NetworkException extends AppException {
   NetworkException({required super.message, super.statusCode});
 
   factory NetworkException.fromDioError(DioException error) {
-    switch (error.response?.statusCode) {
-      case StatusCodes.badRequest:
+    final responseMessage = error.response?.data is Map
+        ? error.response?.data['message']?.toString()
+        : error.message;
+
+    // ✅ استخدم statusCode كـ int مباشرة
+    final statusCode = error.response?.statusCode;
+
+    switch (statusCode) {
+      case 400:
         return NetworkException(
-          message: "Bad Request",
-          statusCode: StatusCodes.badRequest,
+          message: responseMessage ?? "Bad Request",
+          statusCode: 400,
         );
-      case StatusCodes.unauthorized:
+      case 401:
         return NetworkException(
-          message: "Unauthorized - Please login again",
-          statusCode: StatusCodes.unauthorized,
+          message: responseMessage ?? "Unauthorized",
+          statusCode: 401,
         );
-      case StatusCodes.forbidden:
+      case 403:
         return NetworkException(
-          message: "Forbidden - You don't have permission",
-          statusCode: StatusCodes.forbidden,
+          message: responseMessage ?? "Forbidden",
+          statusCode: 403,
         );
-      case StatusCodes.notFound:
+      case 404:
         return NetworkException(
-          message: "Not Found",
-          statusCode: StatusCodes.notFound,
+          message: responseMessage ?? "Not Found",
+          statusCode: 404,
         );
-      case StatusCodes.serverError:
+      case 500:
         return NetworkException(
-          message: "Server Error - Please try again later",
-          statusCode: StatusCodes.serverError,
+          message: responseMessage ?? "Server Error",
+          statusCode: 500,
         );
       default:
         return NetworkException(
-          message: error.message ?? "Unexpected network error",
+          message: responseMessage ?? error.message ?? "Unexpected error",
+          statusCode: statusCode,
         );
     }
   }

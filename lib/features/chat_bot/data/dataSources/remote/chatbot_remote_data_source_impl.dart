@@ -2,43 +2,78 @@ import 'package:dio/dio.dart';
 import 'package:graduation_project/core/api/end_points.dart';
 import 'package:graduation_project/core/exceptions/exceptions.dart';
 
-import '../../../../../core/api/api_manger.dart';
+import '../../../../../core/network/ai_dio_factory.dart';
+import '../../models/ai_fixing_result_model.dart';
 import '../../models/message_model.dart';
 import 'chatbot_remote_data_source.dart';
 
 class ChatbotRemoteDataSourceImpl implements ChatbotRemoteDataSource {
-  // ── Send Message ──────────────────────────────────
-  @override
-  Future<MessageModel> sendMessage(String message) async {
+  // ── Check AI Health ───────────────────────────────
+  Future<bool> _checkHealth() async {
     try {
-      final response = await ApiManager.post(
-        EndPoints.chatbot,
-        body: {"message": message},
-      );
-      return MessageModel.fromJson(response.data);
-    } on DioException catch (e) {
-      throw NetworkException.fromDioError(e);
+      final dio = AiDioFactory.getDio();
+      final response = await dio.get(EndPoints.aiHealth);
+      return response.statusCode == 200;
     } catch (e) {
-      throw NetworkException(message: e.toString());
+      return false;
     }
   }
 
-  // ── Send Image ────────────────────────────────────
+  // ── Send Message ──────────────────────────────────
   @override
-  Future<MessageModel> sendImage(String imagePath) async {
-    try {
-      final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(imagePath),
-      });
-      final response = await ApiManager.post(
-        EndPoints.aiFixing,
-        body: formData.fields.asMap().map((_, e) => MapEntry(e.key, e.value)),
-      );
-      return MessageModel.fromJson(response.data);
-    } on DioException catch (e) {
-      throw NetworkException.fromDioError(e);
-    } catch (e) {
-      throw NetworkException(message: e.toString());
+  Future<MessageModel> sendMessage(String message) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return MessageModel.bot(
+      "Sorry, the chatbot service is currently unavailable. Please use the AI Car Damage feature by sending an image. 🚗",
+    );
+  }
+
+  // ── Send Image (AI Predict) ───────────────────────
+  @override
+  Future<AiFixingResultModel> sendImage(String imagePath) async {
+    int retryCount = 0;
+    const maxRetries = 3;
+
+    while (retryCount < maxRetries) {
+      try {
+        // ── Check Health First ──────────────────
+        final isHealthy = await _checkHealth();
+        if (!isHealthy) {
+          await Future.delayed(const Duration(seconds: 3));
+          retryCount++;
+          continue;
+        }
+
+        final dio = AiDioFactory.getDio();
+        final formData = FormData.fromMap({
+          'image': await MultipartFile.fromFile(
+            imagePath,
+            filename: imagePath.split('/').last,
+          ),
+        });
+
+        final response = await dio.post(EndPoints.aiPredict, data: formData);
+
+        // ✅ طباعة الـ response
+        print('AI Response Status: ${response.statusCode}');
+        print('AI Response Data: ${response.data}');
+        print('AI Response Keys: ${(response.data as Map).keys}');
+
+        return AiFixingResultModel.fromJson(response.data);
+      } on DioException catch (e) {
+        print('DioException: ${e.message}');
+        print('DioException Response: ${e.response?.data}');
+        retryCount++;
+        if (retryCount == maxRetries) {
+          throw NetworkException.fromDioError(e);
+        }
+        await Future.delayed(const Duration(seconds: 2));
+      } catch (e) {
+        print('Exception: $e');
+        throw NetworkException(message: e.toString());
+      }
     }
+
+    throw NetworkException(message: "Failed after $maxRetries retries");
   }
 }

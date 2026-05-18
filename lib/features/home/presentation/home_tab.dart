@@ -37,10 +37,10 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // ── Header ──────────────────────────────
+          // ── Header ────────────────────────────────
           _buildHeader(context),
 
-          // ── Body ────────────────────────────────
+          // ── Body ──────────────────────────────────
           Expanded(
             child: BlocConsumer<HomeBloc, HomeState>(
               listener: (context, state) {
@@ -54,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               },
               builder: (context, state) {
+                // ── Loading ────────────────────────
                 if (state is HomeLoadingState || state is SearchLoadingState) {
                   return const Center(
                     child: CircularProgressIndicator(
@@ -62,18 +63,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }
 
+                // ── Search Empty ───────────────────
                 if (state is SearchEmptyState) {
                   return Center(
-                    child: Text(
-                      "No products found",
-                      style: getMediumStyle(
-                        color: ColorManager.textSecondary,
-                        fontSize: FontSize.s16,
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.search_off,
+                          size: 64,
+                          color: ColorManager.grey,
+                        ),
+                        const SizedBox(height: AppSize.s12),
+                        Text(
+                          "No products found",
+                          style: getMediumStyle(
+                            color: ColorManager.textSecondary,
+                            fontSize: FontSize.s16,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }
 
+                // ── Search Results ─────────────────
                 if (state is SearchSuccessState) {
                   return GridView.builder(
                     padding: const EdgeInsets.all(AppPadding.p16),
@@ -93,13 +107,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         price: product.price,
                         isFavorite: product.isFavorite,
                         onFavoriteTap: () {},
-                        onCardTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            Routes.productDetails,
-                            arguments: product,
-                          );
-                        },
+                        onCardTap: () => Navigator.pushNamed(
+                          context,
+                          Routes.productDetails,
+                          arguments: product,
+                        ),
                         onAddToCartTap: () {
                           context.read<CartBloc>().add(
                             AddCartItemEvent(
@@ -116,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }
 
+                // ── Home Data ──────────────────────
                 if (state is HomeDataSuccessState) {
                   return RefreshIndicator(
                     color: ColorManager.primary,
@@ -133,42 +146,97 @@ class _HomeScreenState extends State<HomeScreen> {
                             "Global Company",
                             style: getBoldStyle(
                               color: ColorManager.textPrimary,
-                              fontSize: FontSize.s20,
+                              fontSize: FontSize.s18,
                             ),
                           ),
                           const SizedBox(height: AppSize.s12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: state.brands
-                                .map(
-                                  (brand) => _BrandItem(
-                                    name: brand.name,
-                                    image: brand.image,
+
+                          // ── Brands Row ───────────
+                          SizedBox(
+                            height: AppSize.s80,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: state.brands.length,
+                              itemBuilder: (context, index) {
+                                final brand = state.brands[index];
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                    right: AppPadding.p16,
                                   ),
-                                )
-                                .toList(),
+                                  child: Column(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: AppSize.s24,
+                                        backgroundColor: ColorManager.primary
+                                            .withOpacity(0.1),
+                                        child: const Icon(
+                                          Icons.directions_car,
+                                          color: ColorManager.primary,
+                                          size: AppSize.s20,
+                                        ),
+                                      ),
+                                      const SizedBox(height: AppSize.s4),
+                                      Text(
+                                        brand.name,
+                                        style: getRegularStyle(
+                                          color: ColorManager.textPrimary,
+                                          fontSize: FontSize.s12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                           ),
 
                           const SizedBox(height: AppSize.s20),
 
-                          // ── Trends ───────────────
+                          // ── Trends ────────────────
                           Text(
                             "Trends",
                             style: getBoldStyle(
                               color: ColorManager.textPrimary,
-                              fontSize: FontSize.s20,
+                              fontSize: FontSize.s18,
                             ),
                           ),
                           const SizedBox(height: AppSize.s12),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(AppRadius.r16),
-                            child: Image.network(
-                              state.trends.isNotEmpty
-                                  ? state.trends.first.image
-                                  : "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7",
-                              height: AppSize.s150,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
+
+                          SizedBox(
+                            height: AppSize.s150,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: state.trends.length,
+                              itemBuilder: (context, index) {
+                                final trend = state.trends[index];
+                                return GestureDetector(
+                                  onTap: () => Navigator.pushNamed(
+                                    context,
+                                    Routes.productDetails,
+                                    arguments: trend,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                      right: AppPadding.p12,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.r12,
+                                      ),
+                                      child: trend.image.isNotEmpty
+                                          ? Image.network(
+                                              trend.image,
+                                              width: AppSize.s200,
+                                              height: AppSize.s150,
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (_, __, ___) =>
+                                                  _buildImageError(),
+                                            )
+                                          : _buildImageError(),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
 
@@ -179,10 +247,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             "Best Price",
                             style: getBoldStyle(
                               color: ColorManager.textPrimary,
-                              fontSize: FontSize.s20,
+                              fontSize: FontSize.s18,
                             ),
                           ),
                           const SizedBox(height: AppSize.s12),
+
                           GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
@@ -202,13 +271,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                 price: product.price,
                                 isFavorite: product.isFavorite,
                                 onFavoriteTap: () {},
-                                onCardTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    Routes.productDetails,
-                                    arguments: product,
-                                  );
-                                },
+                                onCardTap: () => Navigator.pushNamed(
+                                  context,
+                                  Routes.productDetails,
+                                  arguments: product,
+                                ),
                                 onAddToCartTap: () {
                                   context.read<CartBloc>().add(
                                     AddCartItemEvent(
@@ -231,6 +298,44 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }
 
+                // ── Error ──────────────────────────
+                if (state is HomeDataErrorState) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: ColorManager.error,
+                          size: AppSize.s60,
+                        ),
+                        const SizedBox(height: AppSize.s12),
+                        Text(
+                          state.failure.message,
+                          style: getRegularStyle(
+                            color: ColorManager.error,
+                            fontSize: FontSize.s14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSize.s16),
+                        ElevatedButton(
+                          onPressed: () => context.read<HomeBloc>().add(
+                            const GetHomeDataEvent(),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorManager.primary,
+                          ),
+                          child: const Text(
+                            "Retry",
+                            style: TextStyle(color: ColorManager.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
                 return const SizedBox();
               },
             ),
@@ -240,11 +345,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Header ────────────────────────────────────────
+  // ── Header ───────────────────────────────────────
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppPadding.p16),
-      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(
+        AppPadding.p16,
+        AppPadding.p48,
+        AppPadding.p16,
+        AppPadding.p16,
+      ),
       decoration: const BoxDecoration(
         color: ColorManager.primary,
         borderRadius: BorderRadius.only(
@@ -254,9 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
-          const SizedBox(height: AppSize.s40),
-
-          // ── Logo ──────────────────────────────
+          // ── Logo ──────────────────────────────────
           Text(
             "CarGo",
             style: GoogleFonts.mali(
@@ -269,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: AppSize.s12),
 
-          // ── Search & Cart ─────────────────────
+          // ── Search + Cart ─────────────────────────
           Row(
             children: [
               Expanded(
@@ -289,11 +396,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: TextField(
                           controller: _searchController,
-                          onChanged: (query) {
-                            context.read<HomeBloc>().add(
-                              SearchProductsEvent(query),
-                            );
-                          },
+                          onChanged: (query) => context.read<HomeBloc>().add(
+                            SearchProductsEvent(query),
+                          ),
                           decoration: const InputDecoration(
                             hintText: "Search...",
                             hintStyle: TextStyle(color: ColorManager.grey),
@@ -308,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(width: AppSize.s12),
 
-              // ── Cart Icon with Badge ───────────
+              // ── Cart Icon ────────────────────────
               BlocBuilder<CartBloc, CartState>(
                 builder: (context, state) {
                   int itemCount = 0;
@@ -363,50 +468,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: AppSize.s8),
         ],
       ),
     );
   }
-}
 
-// ── Brand Item ────────────────────────────────────────
-class _BrandItem extends StatelessWidget {
-  final String name;
-  final String image;
-
-  const _BrandItem({required this.name, required this.image});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: AppSize.s60,
-          width: AppSize.s60,
-          decoration: BoxDecoration(
-            color: ColorManager.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: ColorManager.lightGrey),
-          ),
-          child: ClipOval(
-            child: Image.network(
-              image,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
-                  const Icon(Icons.directions_car, color: ColorManager.primary),
-            ),
-          ),
-        ),
-        const SizedBox(height: AppSize.s4),
-        Text(
-          name,
-          style: getRegularStyle(
-            color: ColorManager.textPrimary,
-            fontSize: FontSize.s12,
-          ),
-        ),
-      ],
+  // ── Image Error ──────────────────────────────────
+  Widget _buildImageError() {
+    return Container(
+      width: AppSize.s200,
+      height: AppSize.s150,
+      color: ColorManager.lightGrey,
+      child: const Icon(
+        Icons.image_not_supported_outlined,
+        color: ColorManager.grey,
+      ),
     );
   }
 }

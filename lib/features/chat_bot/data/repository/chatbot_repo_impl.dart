@@ -6,6 +6,7 @@ import '../../../../core/exceptions/failuers.dart';
 import '../../domain/entity/message_entity.dart';
 import '../../domain/repository/chatbot_repo.dart';
 import '../dataSources/remote/chatbot_remote_data_source.dart';
+import '../models/ai_fixing_result_model.dart';
 
 class ChatbotRepoImpl implements ChatbotRepo {
   final ChatbotRemoteDataSource remoteDataSource;
@@ -27,7 +28,9 @@ class ChatbotRepoImpl implements ChatbotRepo {
   }
 
   @override
-  Future<Either<Failure, MessageEntity>> sendImage(String imagePath) async {
+  Future<Either<Failure, AiFixingResultModel>> sendImage(
+    String imagePath,
+  ) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure(message: "No internet connection"));
     }

@@ -1,4 +1,4 @@
-class ProductEntity {
+class ProductScreenEntity {
   final String id;
   final String name;
   final String image;
@@ -9,7 +9,7 @@ class ProductEntity {
   final String categoryId;
   final bool isFavorite;
 
-  const ProductEntity({
+  const ProductScreenEntity({
     required this.id,
     required this.name,
     required this.image,

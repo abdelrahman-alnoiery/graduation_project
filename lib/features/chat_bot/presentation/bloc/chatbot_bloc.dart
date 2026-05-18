@@ -12,6 +12,8 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
   final SendImageUseCase sendImageUseCase;
 
   final List<MessageEntity> _messages = [];
+  DateTime? _lastImageRequest;
+  bool _isProcessingImage = false; // ✅ منع الطلبات المتزامنة
 
   ChatbotBloc({
     required this.sendMessageUseCase,
@@ -27,11 +29,9 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
     SendMessageEvent event,
     Emitter<ChatbotState> emit,
   ) async {
-    // Add user message
     _messages.add(MessageModel.userText(event.message));
     emit(ChatbotSuccessState(List.from(_messages)));
 
-    // Send to API
     emit(const ChatbotLoadingState());
     final result = await sendMessageUseCase(event.message);
     result.fold(
@@ -46,33 +46,66 @@ class ChatbotBloc extends Bloc<ChatbotEvent, ChatbotState> {
     );
   }
 
-  // ── Send Image ────────────────────────────────────
+  // ── Send Image (AI Fixing) ────────────────────────
   Future<void> _onSendImage(
     SendImageEvent event,
     Emitter<ChatbotState> emit,
   ) async {
-    // Add user image message
+    // ── منع الطلبات المتزامنة ──────────────────────
+    if (_isProcessingImage) {
+      emit(
+        const ChatbotErrorState(
+          "Please wait for the current analysis to finish",
+        ),
+      );
+      emit(ChatbotSuccessState(List.from(_messages)));
+      return;
+    }
+
+    // ── Cooldown بين الطلبات ───────────────────────
+    final now = DateTime.now();
+    if (_lastImageRequest != null) {
+      final diff = now.difference(_lastImageRequest!).inSeconds;
+      if (diff < 15) {
+        final remaining = 15 - diff;
+        emit(
+          ChatbotErrorState(
+            "Please wait $remaining seconds before sending another image",
+          ),
+        );
+        emit(ChatbotSuccessState(List.from(_messages)));
+        return;
+      }
+    }
+
+    _isProcessingImage = true;
+    _lastImageRequest = now;
+
+    // ── Add user image message ─────────────────────
     _messages.add(MessageModel.userImage(event.imagePath));
     emit(ChatbotSuccessState(List.from(_messages)));
-
-    // Send to API
     emit(const ChatbotLoadingState());
+
+    // ── Send to AI API ─────────────────────────────
     final result = await sendImageUseCase(event.imagePath);
-    result.fold(
-      (failure) {
-        emit(ChatbotErrorState(failure.message));
-        emit(ChatbotSuccessState(List.from(_messages)));
-      },
-      (botMessage) {
-        _messages.add(botMessage);
-        emit(ChatbotSuccessState(List.from(_messages)));
-      },
-    );
+    _isProcessingImage = false;
+
+    result.fold((failure) {
+      // ── إضافة رسالة خطأ من الـ Bot ────────────
+      _messages.add(
+        MessageModel.bot(
+          "Sorry, I couldn't analyze your image. Please try again. 🔄",
+        ),
+      );
+      emit(ChatbotSuccessState(List.from(_messages)));
+    }, (aiResult) => emit(AiFixingSuccessState(aiResult)));
   }
 
   // ── Clear Chat ────────────────────────────────────
   void _onClearChat(ClearChatEvent event, Emitter<ChatbotState> emit) {
     _messages.clear();
+    _isProcessingImage = false;
+    // ✅ مش بنمسح الـ _lastImageRequest عشان الـ cooldown يفضل شغال
     emit(const ChatbotInitialState());
   }
 }

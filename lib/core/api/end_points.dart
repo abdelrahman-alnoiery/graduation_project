@@ -1,38 +1,55 @@
 class EndPoints {
-  static const String baseUrl = "https://your-api.com/api/";
+  // ── Base URLs ─────────────────────────────────────
+  static const String baseUrl =
+      "https://cargo-project-production.up.railway.app/api";
+  static const String aiBaseUrl = "https://abdoelhadray-cardamage.hf.space";
 
-  // Auth
-  static const String signIn = "auth/login";
-  static const String signUp = "auth/register";
-  static const String otp = "auth/otp";
-  static const String verify = "auth/verify";
+  // ── AI Endpoints ──────────────────────────────────
+  static const String aiPredict = "/api/predict";
+  static const String aiClasses = "/api/classes";
+  static const String aiHealth = "/api/health";
 
-  // Products
-  static const String products = "products";
-  static const String productDetails = "products/details";
-  static const String categories = "categories";
+  // ── باقي الـ endpoints ────────────────────────────
+  static const String signUp = "/auth/register";
+  static const String signIn = "/auth/login";
 
-  // Cart
-  static const String cart = ""; // ⚠️ هيتملى لما الـ Backend يبعت الـ API
+  // ── User ──────────────────────────────────────────
+  static const String getMe = "/user";
+  static const String updateMe = "/user";
 
-  // Favorites
-  static const String favorites = "favorites";
+  // ── Products ──────────────────────────────────────
+  static const String products = "/product";
+  static const String productDetails = "/product";
+  static const String sellerProducts = "/product/seller";
 
-  // AI
-  static const String aiFixing = "ai/fixing";
-  static const String chatbot = "chatbot";
+  // ── Orders ────────────────────────────────────────
+  static const String createOrder = "/order";
+  static const String myOrders = "/order/my";
+  static const String allOrders = "/order";
 
-  static const String forgotPassword = "";
-  static const String resetPassword = "";
-  static const String signOut = "";
+  // ── Reviews ───────────────────────────────────────
+  static const String reviews = "/review";
+  static const String productReviews = "/review/product";
 
-  // ⚠️ هيتملى لما الـ Backend يبعت الـ API
-  // static const String products_of_category = "";
+  // ── Recommendations ───────────────────────────────
+  static const String contentRecommend = "/recommend/content";
+  static const String trendingRecommend = "/recommend/trending";
+  static const String userRecommend = "/recommend/user";
+
+  // ── Car Damage Detection ──────────────────────────
+  static const String detectDamage = "/detect-damage";
+  static const String otp = "";
+  static const String verify = "";
+  static const String categories = "";
+  static const String cart = "";
+  static const String favorites = "";
+  static const String chatbot = "";
   static const String bestPrice = "";
   static const String brands = "";
   static const String trends = "";
-
-  static const String profile = ""; // ⚠️ هيتملى لما الـ Backend يبعت الـ API
-  static const String changePassword =
-      ""; // ⚠️ هيتملى لما الـ Backend يبعت الـ API
+  static const String profile = "";
+  static const String changePassword = "";
+  static const String signOut = "";
+  static const String forgotPassword = "";
+  static const String resetPassword = "";
 }

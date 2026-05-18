@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:graduation_project/config/routes_manager/routes.dart';
 import 'package:graduation_project/core/utils/font_manager.dart';
 import 'package:graduation_project/core/utils/styles_manager.dart';
@@ -10,36 +9,9 @@ import 'package:graduation_project/features/profile_tab/presentation/bloc/profil
 import 'package:graduation_project/features/profile_tab/presentation/bloc/profile_state.dart';
 
 import '../../../../core/utils/color_maanger.dart';
-import '../../../../core/utils/components/main_button.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  final _firstNameController = TextEditingController();
-  final _lastNameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  String _selectedLanguage = 'English';
-
-  @override
-  void initState() {
-    super.initState();
-    context.read<ProfileBloc>().add(const GetProfileEvent());
-  }
-
-  @override
-  void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _phoneController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,299 +25,354 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Routes.signInRoute,
               (route) => false,
             );
-          } else if (state is UpdateProfileSuccessState) {
+          }
+          if (state is ProfileErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(
-                  "Profile updated successfully",
-                  style: getRegularStyle(color: ColorManager.white),
-                ),
-                backgroundColor: ColorManager.success,
-              ),
-            );
-          } else if (state is ProfileErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.failure.message),
+                content: Text(state.message),
                 backgroundColor: ColorManager.error,
               ),
             );
-          } else if (state is GetProfileSuccessState) {
-            _firstNameController.text = state.profile.firstName;
-            _lastNameController.text = state.profile.lastName;
-            _phoneController.text = state.profile.phone;
-            _emailController.text = state.profile.email;
-            _selectedLanguage = state.profile.language;
           }
         },
         builder: (context, state) {
-          return Column(
-            children: [
-              // ── Header ──────────────────────────
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppPadding.p16),
-                decoration: const BoxDecoration(
-                  color: ColorManager.primary,
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(AppRadius.r24),
-                    bottomRight: Radius.circular(AppRadius.r24),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    const SizedBox(height: AppSize.s40),
-                    Text(
-                      "CarGo",
-                      style: GoogleFonts.mali(
-                        fontSize: 44,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        fontStyle: FontStyle.italic,
+          if (state is ProfileLoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(color: ColorManager.primary),
+            );
+          }
+
+          if (state is ProfileSuccessState) {
+            final user = state.user;
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  // ── Header ──────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppPadding.p16,
+                      AppPadding.p60,
+                      AppPadding.p16,
+                      AppPadding.p24,
+                    ),
+                    decoration: const BoxDecoration(
+                      color: ColorManager.primary,
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(AppRadius.r24),
+                        bottomRight: Radius.circular(AppRadius.r24),
                       ),
                     ),
-                  ],
-                ),
-              ),
-
-              Expanded(
-                child: state is ProfileLoadingState
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: ColorManager.primary,
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(AppPadding.p16),
-                        child: Column(
-                          children: [
-                            // ── Profile Image ──────
-                            Stack(
-                              children: [
-                                CircleAvatar(
-                                  radius: AppSize.s48,
-                                  backgroundColor: ColorManager.lightGrey,
-                                  backgroundImage:
-                                      state is GetProfileSuccessState &&
-                                          state.profile.image != null
-                                      ? NetworkImage(state.profile.image!)
-                                      : null,
-                                  child:
-                                      state is GetProfileSuccessState &&
-                                          state.profile.image == null
-                                      ? const Icon(
-                                          Icons.person,
-                                          size: AppSize.s60,
-                                          color: ColorManager.grey,
-                                        )
-                                      : null,
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(
-                                      AppPadding.p4,
-                                    ),
-                                    decoration: const BoxDecoration(
-                                      color: ColorManager.primary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.camera_alt,
-                                      color: ColorManager.white,
-                                      size: AppSize.s16,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                    child: Column(
+                      children: [
+                        // ── Avatar ────────────────
+                        CircleAvatar(
+                          radius: AppSize.s48,
+                          backgroundColor: ColorManager.white,
+                          child: Text(
+                            user.firstName.isNotEmpty
+                                ? user.firstName[0].toUpperCase()
+                                : 'U',
+                            style: getBoldStyle(
+                              color: ColorManager.primary,
+                              fontSize: FontSize.s32,
                             ),
+                          ),
+                        ),
 
-                            const SizedBox(height: AppSize.s8),
+                        const SizedBox(height: AppSize.s12),
 
-                            // ── Name & Email ───────
-                            if (state is GetProfileSuccessState) ...[
-                              Text(
-                                state.profile.fullName,
-                                style: getBoldStyle(
-                                  color: ColorManager.textPrimary,
-                                  fontSize: FontSize.s18,
+                        // ── Name ──────────────────
+                        Text(
+                          user.fullName,
+                          style: getBoldStyle(
+                            color: ColorManager.white,
+                            fontSize: FontSize.s20,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSize.s4),
+
+                        // ── Email ─────────────────
+                        Text(
+                          user.email,
+                          style: getRegularStyle(
+                            color: ColorManager.white,
+                            fontSize: FontSize.s14,
+                          ),
+                        ),
+
+                        const SizedBox(height: AppSize.s8),
+
+                        // ── Role Badge ────────────
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppPadding.p12,
+                            vertical: AppPadding.p4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: ColorManager.white,
+                            borderRadius: BorderRadius.circular(AppRadius.r50),
+                          ),
+                          child: Text(
+                            user.role?.toUpperCase() ?? 'SELLER',
+                            style: getMediumStyle(
+                              color: ColorManager.white,
+                              fontSize: FontSize.s12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSize.s16),
+
+                  // ── Info Cards ───────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppPadding.p16,
+                    ),
+                    child: Column(
+                      children: [
+                        // ── My Orders ─────────────
+                        _buildMenuCard(
+                          icon: Icons.shopping_bag_outlined,
+                          title: "My Orders",
+                          subtitle: "Track your orders",
+                          onTap: () {},
+                        ),
+
+                        const SizedBox(height: AppSize.s12),
+
+                        // ── Edit Profile ──────────
+                        _buildMenuCard(
+                          icon: Icons.edit_outlined,
+                          title: "Edit Profile",
+                          subtitle: "Update your information",
+                          onTap: () => _showEditDialog(context, user),
+                        ),
+
+                        const SizedBox(height: AppSize.s12),
+
+                        // ── About ─────────────────
+                        _buildMenuCard(
+                          icon: Icons.info_outline,
+                          title: "About CarGo",
+                          subtitle: "Version 1.0.0",
+                          onTap: () {},
+                        ),
+
+                        const SizedBox(height: AppSize.s24),
+
+                        // ── Logout Button ─────────
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showLogoutDialog(context),
+                            icon: const Icon(
+                              Icons.logout,
+                              color: ColorManager.white,
+                            ),
+                            label: Text(
+                              "Logout",
+                              style: getBoldStyle(
+                                color: ColorManager.white,
+                                fontSize: FontSize.s16,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ColorManager.error,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: AppPadding.p16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.r12,
                                 ),
                               ),
-                              Text(
-                                state.profile.email,
-                                style: getRegularStyle(
-                                  color: ColorManager.textSecondary,
-                                  fontSize: FontSize.s14,
-                                ),
-                              ),
-                            ],
-
-                            const SizedBox(height: AppSize.s20),
-
-                            // ── Fields ─────────────
-                            _buildField("First Name", _firstNameController),
-                            const SizedBox(height: AppSize.s12),
-                            _buildField("Last Name", _lastNameController),
-                            const SizedBox(height: AppSize.s12),
-                            _buildField(
-                              "Phone Number",
-                              _phoneController,
-                              keyboardType: TextInputType.phone,
                             ),
-                            const SizedBox(height: AppSize.s12),
-                            _buildField(
-                              "E-Mail",
-                              _emailController,
-                              enabled: false,
-                            ),
-                            const SizedBox(height: AppSize.s12),
-
-                            // ── Language ───────────
-                            _buildLanguageDropdown(),
-
-                            const SizedBox(height: AppSize.s20),
-
-                            // ── Save Button ────────
-                            MainButton(
-                              title: "Save Changes",
-                              isLoading: state is ProfileLoadingState,
-                              onPressed: () {
-                                context.read<ProfileBloc>().add(
-                                  UpdateProfileEvent(
-                                    firstName: _firstNameController.text,
-                                    lastName: _lastNameController.text,
-                                    phone: _phoneController.text,
-                                    language: _selectedLanguage,
-                                  ),
-                                );
-                              },
-                            ),
-
-                            const SizedBox(height: AppSize.s12),
-
-                            // ── Logout Button ───────
-                            MainButton(
-                              title: "Log Out",
-                              isOutlined: true,
-                              onPressed: () {
-                                _showLogoutDialog(context);
-                              },
-                            ),
-
-                            const SizedBox(height: AppSize.s20),
-                          ],
+                          ),
                         ),
-                      ),
+
+                        const SizedBox(height: AppSize.s24),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          );
+            );
+          }
+
+          // ── Error ────────────────────────────────
+          if (state is ProfileErrorState) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: ColorManager.error,
+                    size: AppSize.s60,
+                  ),
+                  const SizedBox(height: AppSize.s12),
+                  Text(
+                    state.message,
+                    style: getRegularStyle(
+                      color: ColorManager.error,
+                      fontSize: FontSize.s14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppSize.s16),
+                  ElevatedButton(
+                    onPressed: () => context.read<ProfileBloc>().add(
+                      const GetProfileEvent(),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorManager.primary,
+                    ),
+                    child: const Text(
+                      "Retry",
+                      style: TextStyle(color: ColorManager.white),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return const SizedBox();
         },
       ),
     );
   }
 
-  // ── Field Builder ─────────────────────────────────
-  Widget _buildField(
-    String label,
-    TextEditingController controller, {
-    TextInputType? keyboardType,
-    bool enabled = true,
+  // ── Menu Card ─────────────────────────────────────
+  Widget _buildMenuCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: getMediumStyle(
-            color: ColorManager.textPrimary,
-            fontSize: FontSize.s14,
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppPadding.p16),
+        decoration: BoxDecoration(
+          color: ColorManager.white,
+          borderRadius: BorderRadius.circular(AppRadius.r12),
+          boxShadow: [
+            BoxShadow(
+              color: ColorManager.grey,
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        const SizedBox(height: AppSize.s4),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          enabled: enabled,
-          style: getRegularStyle(
-            color: ColorManager.textPrimary,
-            fontSize: FontSize.s14,
-          ),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: enabled ? ColorManager.white : ColorManager.lightGrey,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppPadding.p16,
-              vertical: AppPadding.p12,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.r8),
-              borderSide: const BorderSide(color: ColorManager.lightGrey),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.r8),
-              borderSide: const BorderSide(color: ColorManager.lightGrey),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.r8),
-              borderSide: const BorderSide(
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppPadding.p10),
+              decoration: BoxDecoration(
                 color: ColorManager.primary,
-                width: 2,
+                borderRadius: BorderRadius.circular(AppRadius.r10),
               ),
+              child: Icon(icon, color: ColorManager.primary, size: AppSize.s24),
             ),
-            disabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.r8),
-              borderSide: const BorderSide(color: ColorManager.lightGrey),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── Language Dropdown ─────────────────────────────
-  Widget _buildLanguageDropdown() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "Language",
-          style: getMediumStyle(
-            color: ColorManager.textPrimary,
-            fontSize: FontSize.s14,
-          ),
-        ),
-        const SizedBox(height: AppSize.s4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: AppPadding.p16),
-          decoration: BoxDecoration(
-            color: ColorManager.white,
-            borderRadius: BorderRadius.circular(AppRadius.r8),
-            border: Border.all(color: ColorManager.lightGrey),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: _selectedLanguage,
-              isExpanded: true,
-              items: ['English', 'Arabic'].map((lang) {
-                return DropdownMenuItem(
-                  value: lang,
-                  child: Text(
-                    lang,
-                    style: getRegularStyle(
+            const SizedBox(width: AppSize.s16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: getMediumStyle(
                       color: ColorManager.textPrimary,
                       fontSize: FontSize.s14,
                     ),
                   ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() => _selectedLanguage = value!);
-              },
+                  Text(
+                    subtitle,
+                    style: getRegularStyle(
+                      color: ColorManager.textSecondary,
+                      fontSize: FontSize.s12,
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: ColorManager.grey,
+              size: AppSize.s16,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Edit Dialog ───────────────────────────────────
+  void _showEditDialog(BuildContext context, user) {
+    final nameController = TextEditingController(text: user.fullName);
+    final emailController = TextEditingController(text: user.email);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          "Edit Profile",
+          style: getBoldStyle(
+            color: ColorManager.textPrimary,
+            fontSize: FontSize.s18,
           ),
         ),
-      ],
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: "Username",
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+            ),
+            const SizedBox(height: AppSize.s12),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(
+                labelText: "Email",
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.read<ProfileBloc>().add(
+                UpdateProfileEvent(
+                  username: nameController.text.trim(),
+                  email: emailController.text.trim(),
+                ),
+              );
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorManager.primary,
+            ),
+            child: const Text(
+              "Save",
+              style: TextStyle(color: ColorManager.white),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -353,16 +380,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         title: Text(
-          "Log Out",
+          "Logout",
           style: getBoldStyle(
             color: ColorManager.textPrimary,
             fontSize: FontSize.s18,
           ),
         ),
         content: Text(
-          "Are you sure you want to log out?",
+          "Are you sure you want to logout?",
           style: getRegularStyle(
             color: ColorManager.textSecondary,
             fontSize: FontSize.s14,
@@ -370,26 +397,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Cancel",
-              style: getMediumStyle(
-                color: ColorManager.grey,
-                fontSize: FontSize.s14,
-              ),
-            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(ctx);
               context.read<ProfileBloc>().add(const LogoutEvent());
             },
-            child: Text(
-              "Log Out",
-              style: getMediumStyle(
-                color: ColorManager.error,
-                fontSize: FontSize.s14,
-              ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColorManager.error,
+            ),
+            child: const Text(
+              "Logout",
+              style: TextStyle(color: ColorManager.white),
             ),
           ),
         ],

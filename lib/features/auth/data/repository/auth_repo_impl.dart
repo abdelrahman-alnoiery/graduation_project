@@ -2,10 +2,13 @@ import 'package:dartz/dartz.dart';
 import 'package:graduation_project/core/exceptions/exceptions.dart';
 import 'package:graduation_project/core/network/check_internet_connection.dart';
 
+import '../../../../core/cache/shared_pref.dart';
 import '../../../../core/exceptions/failuers.dart';
+import '../../../../core/network/dio_factory.dart';
+import '../../../../core/utils/constants_manager.dart';
 import '../../domin/entity/user_entity.dart';
 import '../../domin/repository/auth_repo.dart';
-import '../dataSources/local/local_data_source.dart';
+import '../dataSources/local/auth_local_data_source.dart';
 import '../dataSources/remote/auth_remote_ds.dart';
 
 class AuthRepoImpl implements AuthRepo {
@@ -33,14 +36,25 @@ class AuthRepoImpl implements AuthRepo {
         email: email,
         password: password,
       );
-      await localDataSource.saveToken(user.token ?? '');
-      await localDataSource.saveUserId(user.id);
+
+      if (user.token != null && user.token!.isNotEmpty) {
+        await localDataSource.saveToken(user.token!);
+      }
       await localDataSource.saveIsLoggedIn(true);
+      await localDataSource.saveUserId(user.id);
+      await SharedPref.setString(
+        AppConstants.userName,
+        '${user.firstName} ${user.lastName}'.trim(),
+      );
+
+      // ✅ أضف السطر ده — بيعمل reset للـ Dio عشان يبعت الـ Token في الـ requests الجاية
+      DioFactory.resetDio();
+
       return Right(user);
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 
@@ -66,7 +80,12 @@ class AuthRepoImpl implements AuthRepo {
       );
       return Right(user);
     } on NetworkException catch (e) {
+      print('SignUp NetworkException: ${e.message}'); // ✅ أضف
+      print('SignUp StatusCode: ${e.statusCode}'); // ✅ أضف
       return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      print('SignUp Exception: $e'); // ✅ أضف
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 

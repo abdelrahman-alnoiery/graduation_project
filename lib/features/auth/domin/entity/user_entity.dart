@@ -5,6 +5,7 @@ class UserEntity {
   final String email;
   final String phone;
   final String? token;
+  final String? role;
 
   const UserEntity({
     required this.id,
@@ -13,7 +14,8 @@ class UserEntity {
     required this.email,
     required this.phone,
     this.token,
+    this.role,
   });
 
-  String get fullName => '$firstName $lastName';
+  String get fullName => '$firstName $lastName'.trim();
 }

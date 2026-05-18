@@ -7,17 +7,10 @@ class GetProfileEvent extends ProfileEvent {
 }
 
 class UpdateProfileEvent extends ProfileEvent {
-  final String firstName;
-  final String lastName;
-  final String phone;
-  final String language;
+  final String? username;
+  final String? email;
 
-  const UpdateProfileEvent({
-    required this.firstName,
-    required this.lastName,
-    required this.phone,
-    required this.language,
-  });
+  const UpdateProfileEvent({this.username, this.email});
 }
 
 class LogoutEvent extends ProfileEvent {

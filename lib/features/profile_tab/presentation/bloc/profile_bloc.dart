@@ -21,7 +21,6 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<LogoutEvent>(_onLogout);
   }
 
-  // ── Get Profile ───────────────────────────────────
   Future<void> _onGetProfile(
     GetProfileEvent event,
     Emitter<ProfileState> emit,
@@ -29,35 +28,30 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     emit(const ProfileLoadingState());
     final result = await getProfileUseCase();
     result.fold(
-      (failure) => emit(ProfileErrorState(failure)),
-      (profile) => emit(GetProfileSuccessState(profile)),
+      (failure) => emit(ProfileErrorState(failure.message)),
+      (user) => emit(ProfileSuccessState(user)),
     );
   }
 
-  // ── Update Profile ────────────────────────────────
   Future<void> _onUpdateProfile(
     UpdateProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
     emit(const ProfileLoadingState());
     final result = await updateProfileUseCase(
-      firstName: event.firstName,
-      lastName: event.lastName,
-      phone: event.phone,
-      language: event.language,
+      username: event.username,
+      email: event.email,
     );
     result.fold(
-      (failure) => emit(ProfileErrorState(failure)),
-      (profile) => emit(UpdateProfileSuccessState(profile)),
+      (failure) => emit(ProfileErrorState(failure.message)),
+      (user) => emit(ProfileSuccessState(user)),
     );
   }
 
-  // ── Logout ────────────────────────────────────────
   Future<void> _onLogout(LogoutEvent event, Emitter<ProfileState> emit) async {
-    emit(const ProfileLoadingState());
     final result = await logoutUseCase();
     result.fold(
-      (failure) => emit(ProfileErrorState(failure)),
+      (failure) => emit(ProfileErrorState(failure.message)),
       (_) => emit(const LogoutSuccessState()),
     );
   }

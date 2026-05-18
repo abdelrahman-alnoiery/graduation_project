@@ -4,8 +4,7 @@ class ProfileEntity {
   final String lastName;
   final String email;
   final String phone;
-  final String? image;
-  final String language;
+  final String? role;
 
   const ProfileEntity({
     required this.id,
@@ -13,9 +12,8 @@ class ProfileEntity {
     required this.lastName,
     required this.email,
     required this.phone,
-    this.image,
-    this.language = 'English',
+    this.role,
   });
 
-  String get fullName => '$firstName $lastName';
+  String get fullName => '$firstName $lastName'.trim();
 }

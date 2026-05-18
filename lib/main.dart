@@ -5,8 +5,6 @@ import 'package:graduation_project/core/cache/shared_pref.dart';
 import 'package:graduation_project/core/local_db/hive_helper.dart';
 import 'package:graduation_project/core/network/check_internet_connection.dart';
 import 'package:graduation_project/core/utils/observer.dart';
-// ── Auth ───────────────────────────────────────────
-import 'package:graduation_project/features/auth/data/dataSources/local/local_data_source.dart';
 import 'package:graduation_project/features/auth/data/dataSources/remote/auth_remote_ds_impl.dart';
 import 'package:graduation_project/features/auth/data/repository/auth_repo_impl.dart';
 import 'package:graduation_project/features/auth/domin/usecases/login_usecase.dart';
@@ -27,6 +25,7 @@ import 'package:graduation_project/features/cart/presentation/bloc/cart_event.da
 import 'package:graduation_project/features/categories/data/repository/categories_repo_impl.dart';
 import 'package:graduation_project/features/categories/presentation/bloc/categories_bloc.dart';
 import 'package:graduation_project/features/categories/presentation/bloc/categories_event.dart';
+import 'package:graduation_project/features/chat_bot/data/dataSources/remote/chatbot_remote_data_source_impl.dart';
 // ── Favourite ──────────────────────────────────────
 import 'package:graduation_project/features/favourite/data/repository/favourite_repo_impl.dart';
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_bloc.dart';
@@ -50,9 +49,9 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 // ── Chatbot ────────────────────────────────────────
 
 import 'config/routes_manager/route_generator.dart';
+import 'features/auth/data/dataSources/local/auth_local_data_source_impl.dart';
 import 'features/categories/data/dataSources/remote/categories_remote_data_source_impl.dart';
 import 'features/categories/domain/usecases/get_categories_usecase.dart';
-import 'features/chat_bot/data/dataSources/remote/chatbot_remote_data_source_impl.dart';
 import 'features/chat_bot/data/repository/chatbot_repo_impl.dart';
 import 'features/chat_bot/domain/usecases/send_image_usecase.dart';
 import 'features/chat_bot/domain/usecases/send_message_usecase.dart';
@@ -229,9 +228,49 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'CarGo',
-        initialRoute: Routes.homePageLayoutRoute,
+        initialRoute: Routes.signInRoute,
         onGenerateRoute: RouteGenerator.getRoute,
       ),
     );
   }
 }
+
+// package com.example.test_mobile;
+//
+// import android.os.Bundle;
+// import android.view.View;
+// import android.widget.Button;
+// import android.widget.EditText;
+// import android.widget.TextView;
+//
+// import androidx.appcompat.app.AppCompatActivity;
+//
+// public class MainActivity extends AppCompatActivity {
+//
+//   EditText editTextNote;
+//   Button buttonAdd;
+//   TextView textViewNotes;
+//
+//   @Override
+//   protected void onCreate(Bundle savedInstanceState) {
+//     super.onCreate(savedInstanceState);
+//     setContentView(R.layout.activity_main);
+//
+//     editTextNote = findViewById(R.id.editTextNote);
+//     buttonAdd = findViewById(R.id.buttonAdd);
+//     textViewNotes = findViewById(R.id.textViewNotes);
+//
+//     buttonAdd.setOnClickListener(new View.OnClickListener() {
+//     @Override
+//     public void onClick(View v) {
+//
+//     String note = editTextNote.getText().toString();
+//
+//     if (!note.isEmpty()) {
+//     textViewNotes.append(note + "\n");
+//     editTextNote.setText("");
+//     }
+//     }
+//     });
+//   }
+// }

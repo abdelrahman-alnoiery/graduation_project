@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:graduation_project/core/cache/shared_pref.dart';
 import 'package:graduation_project/core/utils/font_manager.dart';
 import 'package:graduation_project/core/utils/styles_manager.dart';
 import 'package:graduation_project/core/utils/values_manager.dart';
+import 'package:graduation_project/features/chat_bot/presentation/screens/widgets/chatbot_initial_view.dart';
+import 'package:graduation_project/features/chat_bot/presentation/screens/widgets/chatbot_loading_view.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/utils/color_maanger.dart';
 import '../bloc/chatbot_bloc.dart';
 import '../bloc/chatbot_event.dart';
 import '../bloc/chatbot_state.dart';
+import 'widgets/ai_fixing_result.dart';
 import 'widgets/chat_input.dart';
 import 'widgets/message_bubble.dart';
 
@@ -20,6 +25,9 @@ class ChatbotScreen extends StatefulWidget {
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
   final ScrollController _scrollController = ScrollController();
+  final ImagePicker _picker = ImagePicker();
+
+  String get _userName => SharedPref.getString('user_name') ?? 'there';
 
   @override
   void dispose() {
@@ -39,9 +47,31 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
   }
 
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (image != null && mounted) {
+        context.read<ChatbotBloc>().add(SendImageEvent(image.path));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Failed to pick image"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: ColorManager.white,
       appBar: AppBar(
         backgroundColor: ColorManager.white,
@@ -71,7 +101,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ),
       body: Column(
         children: [
-          // ── Messages List ────────────────────
+          // ── Messages List ──────────────────────
           Expanded(
             child: BlocConsumer<ChatbotBloc, ChatbotState>(
               listener: (context, state) {
@@ -88,37 +118,36 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 }
               },
               builder: (context, state) {
+                // ── Initial ──────────────────────
                 if (state is ChatbotInitialState) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.smart_toy_outlined,
-                          color: ColorManager.primary,
-                          size: AppSize.s60,
+                  return ChatbotInitialView(
+                    userName: _userName,
+                    onAnalyzeCarDamage: _pickImageFromGallery,
+                    onFindParts: () {
+                      context.read<ChatbotBloc>().add(
+                        const SendMessageEvent(
+                          "What car parts do you recommend?",
                         ),
-                        const SizedBox(height: AppSize.s16),
-                        Text(
-                          "Hi, Abdelrahman",
-                          style: getBoldStyle(
-                            color: ColorManager.textPrimary,
-                            fontSize: FontSize.s20,
-                          ),
-                        ),
-                        const SizedBox(height: AppSize.s8),
-                        Text(
-                          "How can I help you today?",
-                          style: getRegularStyle(
-                            color: ColorManager.textSecondary,
-                            fontSize: FontSize.s14,
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 }
 
+                // ── Loading ──────────────────────
+                if (state is ChatbotLoadingState) {
+                  return const ChatbotLoadingView();
+                }
+
+                // ── AI Fixing Result ──────────────
+                if (state is AiFixingSuccessState) {
+                  return SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(AppPadding.p16),
+                    child: AiFixingResult(result: state.result),
+                  );
+                }
+
+                // ── Messages ──────────────────────
                 if (state is ChatbotSuccessState) {
                   return ListView.builder(
                     controller: _scrollController,
@@ -130,20 +159,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   );
                 }
 
-                if (state is ChatbotLoadingState) {
-                  return const Center(
-                    child: CircularProgressIndicator(
-                      color: ColorManager.primary,
-                    ),
-                  );
-                }
-
                 return const SizedBox();
               },
             ),
           ),
 
-          // ── Chat Input ───────────────────────
+          // ── Chat Input ─────────────────────────
           ChatInput(
             onSendMessage: (message) {
               context.read<ChatbotBloc>().add(SendMessageEvent(message));

@@ -13,58 +13,43 @@ class ProductModel extends ProductEntity {
     super.isFavorite,
   });
 
-  // ── From Json ─────────────────────────────────────
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    // ✅ الصور جوا colorimage array
+    final colorImages = json['colorimage'] as List? ?? [];
+    String firstImage = '';
+
+    if (colorImages.isNotEmpty) {
+      final images = colorImages.first['images'] as List? ?? [];
+      if (images.isNotEmpty) {
+        firstImage = images.first?.toString() ?? '';
+        // ✅ لو الصورة relative path أضفلها الـ base URL
+        if (firstImage.isNotEmpty && !firstImage.startsWith('http')) {
+          firstImage =
+              'https://cargo-project-production.up.railway.app/$firstImage';
+        }
+      }
+    }
+
     return ProductModel(
-      id: json['id']?.toString() ?? '',
+      id: json['_id']?.toString() ?? '',
       name: json['name'] ?? '',
-      image: json['image'] ?? '',
-      price: (json['price'] as num).toDouble(),
-      oldPrice: (json['old_price'] as num).toDouble(),
-      rating: (json['rating'] as num).toDouble(),
-      reviewCount: json['review_count'] ?? 0,
-      categoryId: json['category_id']?.toString() ?? '',
-      isFavorite: json['is_favorite'] ?? false,
+      image: firstImage,
+      price: (json['price'] as num? ?? 0).toDouble(),
+      oldPrice: (json['price'] as num? ?? 0).toDouble(),
+      rating: (json['averageRating'] as num? ?? 0).toDouble(),
+      reviewCount: json['reviewCount'] ?? 0,
+      categoryId: json['category']?.toString() ?? '',
+      isFavorite: false,
     );
   }
 
-  // ── To Json ───────────────────────────────────────
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      '_id': id,
       'name': name,
-      'image': image,
       'price': price,
-      'old_price': oldPrice,
-      'rating': rating,
-      'review_count': reviewCount,
-      'category_id': categoryId,
-      'is_favorite': isFavorite,
+      'averageRating': rating,
+      'category': categoryId,
     };
-  }
-
-  // ── Copy With ─────────────────────────────────────
-  ProductModel copyWith({
-    String? id,
-    String? name,
-    String? image,
-    double? price,
-    double? oldPrice,
-    double? rating,
-    int? reviewCount,
-    String? categoryId,
-    bool? isFavorite,
-  }) {
-    return ProductModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      image: image ?? this.image,
-      price: price ?? this.price,
-      oldPrice: oldPrice ?? this.oldPrice,
-      rating: rating ?? this.rating,
-      reviewCount: reviewCount ?? this.reviewCount,
-      categoryId: categoryId ?? this.categoryId,
-      isFavorite: isFavorite ?? this.isFavorite,
-    );
   }
 }

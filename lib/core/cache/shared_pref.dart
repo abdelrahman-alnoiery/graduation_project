@@ -1,53 +1,51 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPref {
-  static SharedPreferences? _sharedPreferences;
+  static late SharedPreferences _prefs;
 
   static Future<void> init() async {
-    _sharedPreferences ??= await SharedPreferences.getInstance();
+    _prefs = await SharedPreferences.getInstance();
   }
 
-  // ── Save ──────────────────────────────────────────
+  // ── String ────────────────────────────────────────
+  static Future<bool> setString(String key, String value) async {
+    return await _prefs.setString(key, value);
+  }
 
-  static Future<void> saveString({
-    required String key,
-    required String value,
-  }) async {
-    await _sharedPreferences?.setString(key, value);
+  static String? getString(String key) {
+    return _prefs.getString(key);
+  }
+
+  // ── Bool ──────────────────────────────────────────
+  static Future<bool> setBool(String key, bool value) async {
+    return await _prefs.setBool(key, value);
+  }
+
+  static bool? getBool(String key) {
+    return _prefs.getBool(key);
+  }
+
+  // ── Int ───────────────────────────────────────────
+  static Future<bool> setInt(String key, int value) async {
+    return await _prefs.setInt(key, value);
+  }
+
+  static int? getInt(String key) {
+    return _prefs.getInt(key);
+  }
+
+  // ── Remove ────────────────────────────────────────
+  static Future<bool> remove(String key) async {
+    return await _prefs.remove(key);
+  }
+
+  // ── Clear All ─────────────────────────────────────
+  static Future<bool> clear() async {
+    return await _prefs.clear();
   }
 
   static Future<void> saveBool({
     required String key,
     required bool value,
-  }) async {
-    await _sharedPreferences?.setBool(key, value);
-  }
-
-  static Future<void> saveInt({required String key, required int value}) async {
-    await _sharedPreferences?.setInt(key, value);
-  }
-
-  // ── Get ───────────────────────────────────────────
-
-  static String? getString(String key) {
-    return _sharedPreferences?.getString(key);
-  }
-
-  static bool? getBool(String key) {
-    return _sharedPreferences?.getBool(key);
-  }
-
-  static int? getInt(String key) {
-    return _sharedPreferences?.getInt(key);
-  }
-
-  // ── Delete ────────────────────────────────────────
-
-  static Future<void> remove(String key) async {
-    await _sharedPreferences?.remove(key);
-  }
-
-  static Future<void> clearAll() async {
-    await _sharedPreferences?.clear();
-  }
+  }) async {}
 }

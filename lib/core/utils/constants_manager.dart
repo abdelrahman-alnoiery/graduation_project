@@ -2,11 +2,14 @@ class AppConstants {
   // App Info
   static const String appName = "CarGo";
 
+  static const String userName = 'user_name';
+  static const String userEmail = 'user_email';
+
   // SharedPreferences Keys
   static const String isOnboardingDone = "is_onboarding_done";
-  static const String isLoggedIn = "is_logged_in";
-  static const String userToken = "user_token";
-  static const String userId = "user_id";
+  static const String userToken = 'user_token';
+  static const String isLoggedIn = 'is_logged_in';
+  static const String userId = 'user_id';
 
   // Hive Keys
   static const String cartBox = "cart_box";

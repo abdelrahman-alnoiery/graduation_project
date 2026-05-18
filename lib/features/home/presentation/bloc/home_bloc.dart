@@ -25,49 +25,31 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<SearchProductsEvent>(_onSearchProducts);
   }
 
-  // ── Get Home Data ─────────────────────────────────
   Future<void> _onGetHomeData(
     GetHomeDataEvent event,
     Emitter<HomeState> emit,
   ) async {
     emit(const HomeLoadingState());
 
-    // ── Brands ────────────────────────────────────
+    // ── Brands (static - مش محتاج API) ───────────
     List<BrandEntity> brands = [];
     final brandsResult = await getBrandsUseCase();
-    final brandsFailure = brandsResult.fold((f) => f, (data) {
-      brands = data;
-      return null;
-    });
-    if (brandsFailure != null) {
-      emit(HomeDataErrorState(brandsFailure));
-      return;
-    }
+    brandsResult.fold((f) => brands = [], (data) => brands = data);
 
-    // ── Trends ────────────────────────────────────
+    // ── Trends ─────────────────────────────────────
     List<ProductEntity> trends = [];
     final trendsResult = await getTrendsUseCase();
-    final trendsFailure = trendsResult.fold((f) => f, (data) {
-      trends = data;
-      return null;
-    });
-    if (trendsFailure != null) {
-      emit(HomeDataErrorState(trendsFailure));
-      return;
-    }
+    trendsResult.fold((f) => trends = [], (data) => trends = data);
 
-    // ── Best Price ────────────────────────────────
+    // ── Best Price ─────────────────────────────────
     List<ProductEntity> bestPriceProducts = [];
     final bestPriceResult = await getBestPriceUseCase();
-    final bestPriceFailure = bestPriceResult.fold((f) => f, (data) {
-      bestPriceProducts = data;
-      return null;
-    });
-    if (bestPriceFailure != null) {
-      emit(HomeDataErrorState(bestPriceFailure));
-      return;
-    }
+    bestPriceResult.fold(
+      (f) => bestPriceProducts = [],
+      (data) => bestPriceProducts = data,
+    );
 
+    // ✅ دايماً هيعمل success حتى لو الـ data فاضية
     emit(
       HomeDataSuccessState(
         brands: brands,
@@ -86,7 +68,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       add(const GetHomeDataEvent());
       return;
     }
-
     emit(const SearchLoadingState());
     final result = await searchProductsUseCase(event.query);
     result.fold((failure) => emit(SearchErrorState(failure)), (products) {
