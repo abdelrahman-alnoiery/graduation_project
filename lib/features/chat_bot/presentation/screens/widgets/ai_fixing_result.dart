@@ -64,7 +64,7 @@ class AiFixingResult extends StatelessWidget {
                     vertical: AppPadding.p4,
                   ),
                   decoration: BoxDecoration(
-                    color: ColorManager.primary,
+                    color: ColorManager.primary.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(AppRadius.r8),
                   ),
                   child: Row(
@@ -136,7 +136,7 @@ class AiFixingResult extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.r12),
                 boxShadow: [
                   BoxShadow(
-                    color: ColorManager.grey,
+                    color: ColorManager.grey.withOpacity(0.15),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -148,7 +148,7 @@ class AiFixingResult extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(AppPadding.p8),
                     decoration: BoxDecoration(
-                      color: ColorManager.error,
+                      color: ColorManager.error.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(AppRadius.r8),
                     ),
                     child: const Icon(
@@ -201,7 +201,9 @@ class AiFixingResult extends StatelessWidget {
                               child: Text(
                                 detection.severity,
                                 style: getMediumStyle(
-                                  color: _getSeverityColor(detection.severity),
+                                  color: _getSeverityColor(
+                                    detection.severity,
+                                  ).withOpacity(0.1),
                                   fontSize: FontSize.s10,
                                 ),
                               ),
@@ -262,10 +264,14 @@ class AiFixingResult extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(AppPadding.p16),
           decoration: BoxDecoration(
-            color: result.success ? ColorManager.success : ColorManager.error,
+            color: result.success
+                ? ColorManager.success.withOpacity(0.1)
+                : ColorManager.error.withOpacity(0.1),
             borderRadius: BorderRadius.circular(AppRadius.r12),
             border: Border.all(
-              color: result.success ? ColorManager.success : ColorManager.error,
+              color: result.success
+                  ? ColorManager.success.withOpacity(0.3)
+                  : ColorManager.error.withOpacity(0.3),
             ),
           ),
           child: Row(
@@ -294,7 +300,6 @@ class AiFixingResult extends StatelessWidget {
             ],
           ),
         ),
-
         const SizedBox(height: AppSize.s16),
       ],
     );
@@ -343,9 +348,9 @@ class AiFixingResult extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppPadding.p12),
       decoration: BoxDecoration(
-        color: color,
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(AppRadius.r12),
-        border: Border.all(color: color),
+        border: Border.all(color: color.withOpacity(0.3)),
       ),
       child: Column(
         children: [
@@ -377,7 +382,7 @@ class AiFixingResult extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppPadding.p20),
             decoration: BoxDecoration(
-              color: ColorManager.warning,
+              color: ColorManager.warning.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
