@@ -193,7 +193,9 @@ class AiFixingResult extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: _getSeverityColor(detection.severity),
+                                color: _getSeverityColor(
+                                  detection.severity,
+                                ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(
                                   AppRadius.r4,
                                 ),
@@ -201,9 +203,7 @@ class AiFixingResult extends StatelessWidget {
                               child: Text(
                                 detection.severity,
                                 style: getMediumStyle(
-                                  color: _getSeverityColor(
-                                    detection.severity,
-                                  ).withOpacity(0.1),
+                                  color: _getSeverityColor(detection.severity),
                                   fontSize: FontSize.s10,
                                 ),
                               ),
