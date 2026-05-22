@@ -31,7 +31,7 @@ class _CartScreenState extends State<CartScreen> {
     return Scaffold(
       backgroundColor: ColorManager.white,
       appBar: AppBar(
-        // leading: Icon(Icons.arrow_back, color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: ColorManager.primary,
         title: Text(
           "My Cart",

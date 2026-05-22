@@ -1,23 +1,27 @@
-import 'package:dio/dio.dart';
-import 'package:graduation_project/core/api/end_points.dart';
-import 'package:graduation_project/core/exceptions/exceptions.dart';
 import 'package:graduation_project/features/categories/data/models/category_model.dart';
 
-import '../../../../../core/api/api_manger.dart';
 import 'categories_remote_data_source.dart';
 
 class CategoriesRemoteDataSourceImpl implements CategoriesRemoteDataSource {
+  // ✅ الـ Backend مش عنده categories endpoint
+  // هنستخدم static categories
   @override
   Future<List<CategoryModel>> getCategories() async {
-    try {
-      final response = await ApiManager.get(EndPoints.categories);
-      return (response.data['categories'] as List)
-          .map((category) => CategoryModel.fromJson(category))
-          .toList();
-    } on DioException catch (e) {
-      throw NetworkException.fromDioError(e);
-    } catch (e) {
-      throw NetworkException(message: e.toString());
-    }
+    await Future.delayed(const Duration(milliseconds: 300));
+    return [
+      CategoryModel(id: '1', name: 'Engine Parts', image: '', icon: 'engine'),
+      CategoryModel(id: '2', name: 'Body Parts', image: '', icon: 'body'),
+      CategoryModel(id: '3', name: 'Electrical', image: '', icon: 'electrical'),
+      CategoryModel(id: '4', name: 'Brakes', image: '', icon: 'brakes'),
+      CategoryModel(id: '5', name: 'Suspension', image: '', icon: 'suspension'),
+      CategoryModel(id: '6', name: 'Tires & Wheels', image: '', icon: 'tires'),
+      CategoryModel(id: '7', name: 'Interior', image: '', icon: 'interior'),
+      CategoryModel(
+        id: '8',
+        name: 'Accessories',
+        image: '',
+        icon: 'accessories',
+      ),
+    ];
   }
 }

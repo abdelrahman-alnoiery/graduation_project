@@ -1,4 +1,3 @@
-import '../../../../core/exceptions/failuers.dart';
 import '../../domain/entity/category_entity.dart';
 
 abstract class CategoriesState {
@@ -19,6 +18,6 @@ class CategoriesSuccessState extends CategoriesState {
 }
 
 class CategoriesErrorState extends CategoriesState {
-  final Failure failure;
-  const CategoriesErrorState(this.failure);
+  final String message;
+  const CategoriesErrorState(this.message);
 }
