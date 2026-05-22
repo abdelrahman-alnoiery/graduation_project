@@ -40,6 +40,8 @@ class AuthRepoImpl implements AuthRepo {
       if (user.token != null && user.token!.isNotEmpty) {
         await localDataSource.saveToken(user.token!);
       }
+      // بعد الـ login مباشرة
+      await localDataSource.saveToken(user.token!);
       await localDataSource.saveIsLoggedIn(true);
       await localDataSource.saveUserId(user.id);
       await SharedPref.setString(

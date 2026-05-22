@@ -75,7 +75,7 @@ class ProfileScreen extends StatelessWidget {
                                 : 'U',
                             style: getBoldStyle(
                               color: ColorManager.primary,
-                              fontSize: FontSize.s32,
+                              fontSize: FontSize.s36,
                             ),
                           ),
                         ),
@@ -97,7 +97,7 @@ class ProfileScreen extends StatelessWidget {
                         Text(
                           user.email,
                           style: getRegularStyle(
-                            color: ColorManager.white,
+                            color: ColorManager.white.withOpacity(0.8),
                             fontSize: FontSize.s14,
                           ),
                         ),
@@ -111,7 +111,7 @@ class ProfileScreen extends StatelessWidget {
                             vertical: AppPadding.p4,
                           ),
                           decoration: BoxDecoration(
-                            color: ColorManager.white,
+                            color: ColorManager.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(AppRadius.r50),
                           ),
                           child: Text(
@@ -264,7 +264,7 @@ class ProfileScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.r12),
           boxShadow: [
             BoxShadow(
-              color: ColorManager.grey,
+              color: ColorManager.grey.withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -275,7 +275,7 @@ class ProfileScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppPadding.p10),
               decoration: BoxDecoration(
-                color: ColorManager.primary,
+                color: ColorManager.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppRadius.r10),
               ),
               child: Icon(icon, color: ColorManager.primary, size: AppSize.s24),
