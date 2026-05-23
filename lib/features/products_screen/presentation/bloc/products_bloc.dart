@@ -1,49 +1,37 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:graduation_project/features/products_screen/domain/usecases/get_all_products_usecase.dart';
 
-import '../../domain/usecases/get_all_products_usecase.dart';
 import '../../domain/usecases/get_products_by_category_usecase.dart';
 import 'products_event.dart';
 import 'products_state.dart';
 
 class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
-  final GetProductsByCategoryUseCase getProductsByCategoryUseCase;
   final GetAllProductsUseCase getAllProductsUseCase;
+  final GetProductsByCategoryUseCase getProductsByCategoryUseCase;
 
   ProductsBloc({
-    required this.getProductsByCategoryUseCase,
     required this.getAllProductsUseCase,
+    required this.getProductsByCategoryUseCase,
+    required GetAllProductsUsecase,
   }) : super(const ProductsInitialState()) {
-    on<GetProductsByCategoryEvent>(_onGetProductsByCategory);
-    on<GetAllProductsEvent>(_onGetAllProducts);
+    on<GetProductsEvent>(_onGetProducts);
   }
 
-  Future<void> _onGetProductsByCategory(
-    GetProductsByCategoryEvent event,
+  Future<void> _onGetProducts(
+    GetProductsEvent event,
     Emitter<ProductsState> emit,
   ) async {
     emit(const ProductsLoadingState());
-    final result = await getProductsByCategoryUseCase(event.categoryId);
-    result.fold((failure) => emit(ProductsErrorState(failure)), (products) {
-      if (products.isEmpty) {
-        emit(const ProductsEmptyState());
-      } else {
-        emit(ProductsSuccessState(products));
-      }
-    });
-  }
 
-  Future<void> _onGetAllProducts(
-    GetAllProductsEvent event,
-    Emitter<ProductsState> emit,
-  ) async {
-    emit(const ProductsLoadingState());
-    final result = await getAllProductsUseCase();
-    result.fold((failure) => emit(ProductsErrorState(failure)), (products) {
-      if (products.isEmpty) {
-        emit(const ProductsEmptyState());
-      } else {
-        emit(ProductsSuccessState(products));
-      }
-    });
+    final result = event.categoryId != null
+        ? await getProductsByCategoryUseCase(event.categoryId!)
+        : await getAllProductsUseCase();
+
+    result.fold(
+      (failure) => emit(ProductsErrorState(failure.message)),
+      (products) => products.isEmpty
+          ? emit(const ProductsEmptyState())
+          : emit(ProductsSuccessState(products)),
+    );
   }
 }

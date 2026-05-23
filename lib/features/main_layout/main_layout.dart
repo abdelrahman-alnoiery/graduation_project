@@ -20,8 +20,8 @@ class _HomePageLayoutState extends State<HomePageLayout> {
   final List<Widget> _screens = const [
     HomeScreen(),
     CategoriesScreen(),
-    FavouritesScreen(),
-    ChatbotScreen(), // ✅ بدل CartScreen
+    FavouriteScreen(),
+    ChatbotScreen(),
     ProfileScreen(),
   ];
 

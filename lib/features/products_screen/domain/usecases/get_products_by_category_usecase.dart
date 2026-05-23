@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
+import 'package:graduation_project/core/exceptions/failuers.dart';
 import 'package:graduation_project/features/products_screen/domain/repository/products_repo.dart';
 
-import '../../../../core/exceptions/failuers.dart';
 import '../../../home/domain/entity/product_entity.dart';
 
 class GetProductsByCategoryUseCase {

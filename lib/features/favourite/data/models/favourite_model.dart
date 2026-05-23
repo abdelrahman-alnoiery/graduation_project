@@ -1,40 +1,39 @@
+import 'package:hive/hive.dart';
+
 import '../../domain/entity/favourite_entity.dart';
 
+@HiveType(typeId: 1)
 class FavouriteModel extends FavouriteEntity {
+  @HiveField(0)
+  final String productId;
+
+  @HiveField(1)
+  final String productName;
+
+  @HiveField(2)
+  final String productImage;
+
+  @HiveField(3)
+  final double price;
+
   const FavouriteModel({
-    required super.id,
-    required super.productId,
-    required super.productName,
-    required super.productImage,
-    required super.price,
-    required super.oldPrice,
-    required super.rating,
-    required super.reviewCount,
-  });
+    required this.productId,
+    required this.productName,
+    required this.productImage,
+    required this.price,
+  }) : super(
+         id: productId,
+         name: productName,
+         image: productImage,
+         price: price,
+       );
 
-  factory FavouriteModel.fromJson(Map<String, dynamic> json) {
+  factory FavouriteModel.fromEntity(FavouriteEntity entity) {
     return FavouriteModel(
-      id: json['id']?.toString() ?? '',
-      productId: json['product_id']?.toString() ?? '',
-      productName: json['product_name'] ?? '',
-      productImage: json['product_image'] ?? '',
-      price: (json['price'] as num).toDouble(),
-      oldPrice: (json['old_price'] as num).toDouble(),
-      rating: (json['rating'] as num).toDouble(),
-      reviewCount: json['review_count'] ?? 0,
+      productId: entity.id,
+      productName: entity.name,
+      productImage: entity.image,
+      price: entity.price,
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'product_id': productId,
-      'product_name': productName,
-      'product_image': productImage,
-      'price': price,
-      'old_price': oldPrice,
-      'rating': rating,
-      'review_count': reviewCount,
-    };
   }
 }

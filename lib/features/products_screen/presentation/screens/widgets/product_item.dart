@@ -6,6 +6,7 @@ import 'package:graduation_project/core/utils/styles_manager.dart';
 import 'package:graduation_project/core/utils/values_manager.dart';
 import 'package:graduation_project/features/cart/presentation/bloc/cart_bloc.dart';
 import 'package:graduation_project/features/cart/presentation/bloc/cart_event.dart';
+import 'package:graduation_project/features/favourite/domain/entity/favourite_entity.dart';
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_bloc.dart';
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_event.dart';
 
@@ -88,7 +89,7 @@ class ProductItem extends StatelessWidget {
                           );
                         } else {
                           context.read<FavouriteBloc>().add(
-                            AddFavouriteEvent(product.id),
+                            AddFavouriteEvent(product.id as FavouriteEntity),
                           );
                         }
                       },

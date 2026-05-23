@@ -3,7 +3,7 @@ abstract class HomeEvent {
 }
 
 class GetProductsEvent extends HomeEvent {
-  const GetProductsEvent();
+  const GetProductsEvent({String? categoryId});
 }
 
 class GetBestPriceEvent extends HomeEvent {

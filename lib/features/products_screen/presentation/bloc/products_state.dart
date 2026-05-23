@@ -1,4 +1,3 @@
-import '../../../../core/exceptions/failuers.dart';
 import '../../../home/domain/entity/product_entity.dart';
 
 abstract class ProductsState {
@@ -23,6 +22,6 @@ class ProductsEmptyState extends ProductsState {
 }
 
 class ProductsErrorState extends ProductsState {
-  final Failure failure;
-  const ProductsErrorState(this.failure);
+  final String message;
+  const ProductsErrorState(this.message);
 }

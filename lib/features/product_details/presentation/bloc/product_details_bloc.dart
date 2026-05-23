@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:graduation_project/features/favourite/domain/entity/favourite_entity.dart';
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_bloc.dart';
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_event.dart';
 
@@ -71,7 +72,9 @@ class ProductDetailsBloc
       if (currentState.product.isFavorite) {
         favouriteBloc.add(RemoveFavouriteEvent(event.productId));
       } else {
-        favouriteBloc.add(AddFavouriteEvent(event.productId));
+        favouriteBloc.add(
+          AddFavouriteEvent(event.productId as FavouriteEntity),
+        );
       }
     }
   }

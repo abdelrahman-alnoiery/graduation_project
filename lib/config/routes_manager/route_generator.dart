@@ -42,7 +42,7 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const CategoriesScreen());
 
       case Routes.favoritesRoute:
-        return MaterialPageRoute(builder: (_) => const FavouritesScreen());
+        return MaterialPageRoute(builder: (_) => const FavouriteScreen());
 
       case Routes.profileRoute:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());

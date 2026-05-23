@@ -21,43 +21,33 @@ class FavouriteBloc extends Bloc<FavouriteEvent, FavouriteState> {
     on<RemoveFavouriteEvent>(_onRemoveFavourite);
   }
 
-  // ── Get Favourites ────────────────────────────────
   Future<void> _onGetFavourites(
     GetFavouritesEvent event,
     Emitter<FavouriteState> emit,
   ) async {
     emit(const FavouriteLoadingState());
     final result = await getFavouritesUseCase();
-    result.fold((failure) => emit(FavouriteErrorState(failure)), (favourites) {
-      if (favourites.isEmpty) {
-        emit(const FavouritesEmptyState());
-      } else {
-        emit(GetFavouritesSuccessState(favourites));
-      }
-    });
+    result.fold(
+      (failure) => emit(FavouriteErrorState(failure.message)),
+      (items) => items.isEmpty
+          ? emit(const FavouriteEmptyState())
+          : emit(FavouriteSuccessState(items)),
+    );
   }
 
-  // ── Add Favourite ─────────────────────────────────
   Future<void> _onAddFavourite(
     AddFavouriteEvent event,
     Emitter<FavouriteState> emit,
   ) async {
-    final result = await addFavouriteUseCase(event.productId);
-    result.fold((failure) => emit(FavouriteErrorState(failure)), (_) {
-      emit(const AddFavouriteSuccessState());
-      add(const GetFavouritesEvent());
-    });
+    await addFavouriteUseCase(event.item as String);
+    add(const GetFavouritesEvent());
   }
 
-  // ── Remove Favourite ──────────────────────────────
   Future<void> _onRemoveFavourite(
     RemoveFavouriteEvent event,
     Emitter<FavouriteState> emit,
   ) async {
-    final result = await removeFavouriteUseCase(event.productId);
-    result.fold((failure) => emit(FavouriteErrorState(failure)), (_) {
-      emit(const RemoveFavouriteSuccessState());
-      add(const GetFavouritesEvent());
-    });
+    await removeFavouriteUseCase(event.productId);
+    add(const GetFavouritesEvent());
   }
 }

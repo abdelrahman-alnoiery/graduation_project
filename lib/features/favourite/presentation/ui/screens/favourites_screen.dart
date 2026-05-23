@@ -1,38 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:graduation_project/config/routes_manager/routes.dart';
-import 'package:graduation_project/core/utils/assets_manager.dart';
 import 'package:graduation_project/core/utils/font_manager.dart';
 import 'package:graduation_project/core/utils/styles_manager.dart';
 import 'package:graduation_project/core/utils/values_manager.dart';
-import 'package:graduation_project/features/cart/presentation/bloc/cart_bloc.dart';
-import 'package:graduation_project/features/cart/presentation/bloc/cart_event.dart';
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_bloc.dart';
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_event.dart';
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_state.dart';
 
 import '../../../../../core/utils/color_maanger.dart';
-import '../../../../../core/utils/components/product_card.dart';
-import '../../../../cart/presentation/bloc/cart_state.dart';
-import '../../../../home/presentation/bloc/home_bloc.dart';
-import '../../../../home/presentation/bloc/home_event.dart';
 
-class FavouritesScreen extends StatefulWidget {
-  const FavouritesScreen({super.key});
-
-  @override
-  State<FavouritesScreen> createState() => _FavouritesScreenState();
-}
-
-class _FavouritesScreenState extends State<FavouritesScreen> {
-  final TextEditingController _searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    context.read<FavouriteBloc>().add(const GetFavouritesEvent());
-  }
+class FavouriteScreen extends StatelessWidget {
+  const FavouriteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +19,15 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
-          // ── Header ──────────────────────────────
+          // ── Header ────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(AppPadding.p16),
             width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(
+              AppPadding.p16,
+              AppPadding.p48,
+              AppPadding.p16,
+              AppPadding.p20,
+            ),
             decoration: const BoxDecoration(
               color: ColorManager.primary,
               borderRadius: BorderRadius.only(
@@ -51,135 +35,24 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                 bottomRight: Radius.circular(AppRadius.r24),
               ),
             ),
-            child: Column(
-              children: [
-                const SizedBox(height: AppSize.s40),
-                Text(
-                  "CarGo",
-                  style: GoogleFonts.mali(
-                    fontSize: 44,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    fontStyle: FontStyle.italic,
-                  ),
+            child: Center(
+              child: Text(
+                "Favourites",
+                style: getBoldStyle(
+                  color: ColorManager.white,
+                  fontSize: FontSize.s24,
                 ),
-                const SizedBox(height: AppSize.s12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        height: AppSize.s48,
-                        decoration: BoxDecoration(
-                          color: ColorManager.white,
-                          borderRadius: BorderRadius.circular(AppRadius.r50),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppPadding.p12,
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.search, color: ColorManager.grey),
-                            const SizedBox(width: AppSize.s8),
-                            Expanded(
-                              child: TextField(
-                                controller: _searchController,
-                                onChanged: (query) {
-                                  context.read<HomeBloc>().add(
-                                    SearchProductsEvent(query),
-                                  );
-                                },
-                                decoration: const InputDecoration(
-                                  hintText: "Search...",
-                                  hintStyle: TextStyle(
-                                    color: ColorManager.grey,
-                                  ),
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: AppSize.s12),
-
-                    // ── Cart Icon with Badge ───────────
-                    BlocBuilder<CartBloc, CartState>(
-                      builder: (context, state) {
-                        int itemCount = 0;
-                        if (state is GetCartItemsSuccessState) {
-                          itemCount = state.cartItems.length;
-                        }
-                        return Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            GestureDetector(
-                              onTap: () => Navigator.pushNamed(
-                                context,
-                                Routes.cartRoute,
-                              ),
-                              child: Container(
-                                height: AppSize.s48,
-                                width: AppSize.s48,
-                                decoration: const BoxDecoration(
-                                  color: ColorManager.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.shopping_cart_outlined,
-                                  color: ColorManager.primary,
-                                ),
-                              ),
-                            ),
-                            if (itemCount > 0)
-                              Positioned(
-                                top: -AppSize.s4,
-                                right: -AppSize.s4,
-                                child: Container(
-                                  width: AppSize.s16,
-                                  height: AppSize.s16,
-                                  decoration: const BoxDecoration(
-                                    color: ColorManager.error,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      itemCount > 9 ? "9+" : "$itemCount",
-                                      style: const TextStyle(
-                                        color: ColorManager.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSize.s8),
-              ],
+              ),
             ),
           ),
 
-          // ── Body ────────────────────────────────
+          const SizedBox(height: AppSize.s16),
+
+          // ── Body ──────────────────────────────────
           Expanded(
-            child: BlocConsumer<FavouriteBloc, FavouriteState>(
-              listener: (context, state) {
-                if (state is FavouriteErrorState) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(state.failure.message),
-                      backgroundColor: ColorManager.error,
-                    ),
-                  );
-                }
-              },
+            child: BlocBuilder<FavouriteBloc, FavouriteState>(
               builder: (context, state) {
+                // ── Loading ───────────────────────
                 if (state is FavouriteLoadingState) {
                   return const Center(
                     child: CircularProgressIndicator(
@@ -188,14 +61,16 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                   );
                 }
 
-                if (state is FavouritesEmptyState) {
+                // ── Empty ─────────────────────────
+                if (state is FavouriteEmptyState) {
                   return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(
-                          ImageAssets.emptyFavorites,
-                          height: AppSize.s200,
+                        const Icon(
+                          Icons.favorite_border,
+                          color: ColorManager.grey,
+                          size: AppSize.s80,
                         ),
                         const SizedBox(height: AppSize.s16),
                         Text(
@@ -207,76 +82,106 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
                         ),
                         const SizedBox(height: AppSize.s8),
                         Text(
-                          "Add products to your favourites",
+                          "Add products to your favourites\nto see them here",
                           style: getRegularStyle(
                             color: ColorManager.textSecondary,
                             fontSize: FontSize.s14,
                           ),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),
                   );
                 }
 
-                if (state is GetFavouritesSuccessState) {
-                  return Padding(
+                // ── Success ───────────────────────
+                if (state is FavouriteSuccessState) {
+                  return ListView.builder(
                     padding: const EdgeInsets.all(AppPadding.p16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "My Favorites",
-                          style: getBoldStyle(
-                            color: ColorManager.textPrimary,
-                            fontSize: FontSize.s20,
-                          ),
+                    itemCount: state.favourites.length,
+                    itemBuilder: (context, index) {
+                      final item = state.favourites[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: AppMargin.m12),
+                        decoration: BoxDecoration(
+                          color: ColorManager.white,
+                          borderRadius: BorderRadius.circular(AppRadius.r12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ColorManager.grey.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: AppSize.s16),
-                        Expanded(
-                          child: GridView.builder(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: AppSize.s12,
-                                  mainAxisSpacing: AppSize.s12,
-                                  childAspectRatio: 0.75,
-                                ),
-                            itemCount: state.favourites.length,
-                            itemBuilder: (context, index) {
-                              final item = state.favourites[index];
-                              return ProductCard(
-                                productName: item.productName,
-                                productImage: item.productImage,
-                                price: item.price,
-                                isFavorite: true,
-                                onFavoriteTap: () {
-                                  context.read<FavouriteBloc>().add(
-                                    RemoveFavouriteEvent(item.productId),
-                                  );
-                                },
-                                onCardTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    Routes.productDetails,
-                                    arguments: item,
-                                  );
-                                },
-                                onAddToCartTap: () {
-                                  context.read<CartBloc>().add(
-                                    AddCartItemEvent(
-                                      productId: item.productId,
-                                      productName: item.productName,
-                                      productImage: item.productImage,
-                                      price: item.price,
-                                      quantity: 1,
-                                    ),
-                                  );
-                                },
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(AppPadding.p12),
+                          // ── Image ───────────────
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(AppRadius.r8),
+                            child: item.image.isNotEmpty
+                                ? Image.network(
+                                    item.image,
+                                    width: AppSize.s64,
+                                    height: AppSize.s64,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _buildImageError(),
+                                  )
+                                : _buildImageError(),
+                          ),
+
+                          // ── Info ────────────────
+                          title: Text(
+                            item.name,
+                            style: getMediumStyle(
+                              color: ColorManager.textPrimary,
+                              fontSize: FontSize.s14,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            "EGP ${item.price.toStringAsFixed(0)}",
+                            style: getBoldStyle(
+                              color: ColorManager.primary,
+                              fontSize: FontSize.s14,
+                            ),
+                          ),
+
+                          // ── Remove ──────────────
+                          trailing: IconButton(
+                            onPressed: () {
+                              context.read<FavouriteBloc>().add(
+                                RemoveFavouriteEvent(item.id),
                               );
                             },
+                            icon: const Icon(
+                              Icons.favorite,
+                              color: ColorManager.error,
+                            ),
+                          ),
+
+                          onTap: () => Navigator.pushNamed(
+                            context,
+                            Routes.productDetails,
+                            arguments: item,
                           ),
                         ),
-                      ],
+                      );
+                    },
+                  );
+                }
+
+                // ── Error ─────────────────────────
+                if (state is FavouriteErrorState) {
+                  return Center(
+                    child: Text(
+                      state.message,
+                      style: getRegularStyle(
+                        color: ColorManager.error,
+                        fontSize: FontSize.s14,
+                      ),
                     ),
                   );
                 }
@@ -286,6 +191,18 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildImageError() {
+    return Container(
+      width: AppSize.s64,
+      height: AppSize.s64,
+      color: ColorManager.lightGrey,
+      child: const Icon(
+        Icons.image_not_supported_outlined,
+        color: ColorManager.grey,
       ),
     );
   }
