@@ -8,50 +8,42 @@ import 'package:graduation_project/features/cart/presentation/bloc/cart_event.da
 import 'package:graduation_project/features/cart/presentation/bloc/cart_state.dart';
 
 import '../../../../../core/utils/color_maanger.dart';
-import '../../../../../core/utils/components/main_button.dart';
-import '../widgets/cart_item_widget.dart';
-import '../widgets/empty_cart_widget.dart';
 
-class CartScreen extends StatefulWidget {
+class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
-
-  @override
-  State<CartScreen> createState() => _CartScreenState();
-}
-
-class _CartScreenState extends State<CartScreen> {
-  @override
-  void initState() {
-    super.initState();
-    context.read<CartBloc>().add(const GetCartItemsEvent());
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorManager.white,
+      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: ColorManager.primary,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios, color: ColorManager.white),
+        ),
         title: Text(
           "My Cart",
           style: getBoldStyle(
             color: ColorManager.white,
-            fontSize: FontSize.s20,
+            fontSize: FontSize.s18,
           ),
         ),
         actions: [
-          // ── Clear Cart Button ──────────────────
           BlocBuilder<CartBloc, CartState>(
             builder: (context, state) {
-              if (state is GetCartItemsSuccessState) {
-                return IconButton(
-                  onPressed: () {
-                    _showClearCartDialog(context);
-                  },
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    color: ColorManager.white,
+              if (state is GetCartItemsSuccessState &&
+                  state.cartItems.isNotEmpty) {
+                return TextButton(
+                  onPressed: () =>
+                      context.read<CartBloc>().add(const ClearCartEvent()),
+                  child: Text(
+                    "Clear",
+                    style: getMediumStyle(
+                      color: ColorManager.white,
+                      fontSize: FontSize.s14,
+                    ),
                   ),
                 );
               }
@@ -60,157 +52,234 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ],
       ),
-      body: BlocConsumer<CartBloc, CartState>(
-        listener: (context, state) {
-          if (state is ClearCartSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  "Cart cleared successfully",
-                  style: getRegularStyle(color: ColorManager.white),
-                ),
-                backgroundColor: ColorManager.success,
-              ),
-            );
-          } else if (state is RemoveCartItemSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  "Item removed from cart",
-                  style: getRegularStyle(color: ColorManager.white),
-                ),
-                backgroundColor: ColorManager.success,
-              ),
-            );
-          } else if (state is GetCartItemsErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  state.failure.message,
-                  style: getRegularStyle(color: ColorManager.white),
-                ),
-                backgroundColor: ColorManager.error,
-              ),
-            );
-          }
-        },
+      body: BlocBuilder<CartBloc, CartState>(
         builder: (context, state) {
+          // ── Loading ──────────────────────────────
           if (state is CartLoadingState) {
             return const Center(
               child: CircularProgressIndicator(color: ColorManager.primary),
             );
           }
 
+          // ── Empty ────────────────────────────────
           if (state is CartEmptyState) {
-            return const EmptyCartWidget();
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.shopping_cart_outlined,
+                    color: ColorManager.grey,
+                    size: AppSize.s80,
+                  ),
+                  const SizedBox(height: AppSize.s16),
+                  Text(
+                    "Your Cart is Empty",
+                    style: getBoldStyle(
+                      color: ColorManager.textPrimary,
+                      fontSize: FontSize.s20,
+                    ),
+                  ),
+                  const SizedBox(height: AppSize.s8),
+                  Text(
+                    "Add products to your cart\nto see them here",
+                    style: getRegularStyle(
+                      color: ColorManager.textSecondary,
+                      fontSize: FontSize.s14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            );
           }
 
+          // ── Success ──────────────────────────────
           if (state is GetCartItemsSuccessState) {
+            final items = state.cartItems;
+            final total = items.fold(0.0, (sum, item) => sum + item.totalPrice);
+
             return Column(
               children: [
-                // ── Cart Items List ──────────────
+                // ── Items List ──────────────────
                 Expanded(
-                  child: ListView.separated(
+                  child: ListView.builder(
                     padding: const EdgeInsets.all(AppPadding.p16),
-                    itemCount: state.cartItems.length,
-                    separatorBuilder: (_, __) =>
-                        const SizedBox(height: AppSize.s12),
+                    itemCount: items.length,
                     itemBuilder: (context, index) {
-                      final item = state.cartItems[index];
-                      return CartItemWidget(
-                        item: item,
-                        onRemove: () {
-                          context.read<CartBloc>().add(
-                            RemoveCartItemEvent(item.productId),
-                          );
-                        },
-                        onIncrement: () {
-                          context.read<CartBloc>().add(
-                            UpdateCartItemEvent(
-                              productId: item.productId,
-                              quantity: item.quantity + 1,
+                      final item = items[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: AppMargin.m12),
+                        decoration: BoxDecoration(
+                          color: ColorManager.white,
+                          borderRadius: BorderRadius.circular(AppRadius.r12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: ColorManager.grey.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          );
-                        },
-                        onDecrement: () {
-                          if (item.quantity > 1) {
-                            context.read<CartBloc>().add(
-                              UpdateCartItemEvent(
-                                productId: item.productId,
-                                quantity: item.quantity - 1,
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppPadding.p12),
+                          child: Row(
+                            children: [
+                              // ── Image ──────────
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.r8,
+                                ),
+                                child: item.image.isNotEmpty
+                                    ? Image.network(
+                                        item.image,
+                                        width: AppSize.s80,
+                                        height: AppSize.s80,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            _buildImageError(),
+                                      )
+                                    : _buildImageError(),
                               ),
-                            );
-                          } else {
-                            context.read<CartBloc>().add(
-                              RemoveCartItemEvent(item.productId),
-                            );
-                          }
-                        },
+
+                              const SizedBox(width: AppSize.s12),
+
+                              // ── Info ───────────
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: getMediumStyle(
+                                        color: ColorManager.textPrimary,
+                                        fontSize: FontSize.s14,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: AppSize.s4),
+                                    Text(
+                                      "EGP ${item.price.toStringAsFixed(0)}",
+                                      style: getRegularStyle(
+                                        color: ColorManager.textSecondary,
+                                        fontSize: FontSize.s12,
+                                      ),
+                                    ),
+                                    const SizedBox(height: AppSize.s8),
+
+                                    // ── Quantity ──
+                                    Row(
+                                      children: [
+                                        _buildQuantityButton(
+                                          icon: Icons.remove,
+                                          onTap: () {
+                                            if (item.quantity > 1) {
+                                              context.read<CartBloc>().add(
+                                                UpdateCartItemEvent(
+                                                  productId: item.id,
+                                                  quantity: item.quantity - 1,
+                                                ),
+                                              );
+                                            } else {
+                                              context.read<CartBloc>().add(
+                                                RemoveCartItemEvent(item.id),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppPadding.p12,
+                                          ),
+                                          child: Text(
+                                            "${item.quantity}",
+                                            style: getBoldStyle(
+                                              color: ColorManager.textPrimary,
+                                              fontSize: FontSize.s14,
+                                            ),
+                                          ),
+                                        ),
+                                        _buildQuantityButton(
+                                          icon: Icons.add,
+                                          onTap: () {
+                                            context.read<CartBloc>().add(
+                                              UpdateCartItemEvent(
+                                                productId: item.id,
+                                                quantity: item.quantity + 1,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // ── Total & Delete ─
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    "EGP ${item.totalPrice.toStringAsFixed(0)}",
+                                    style: getBoldStyle(
+                                      color: ColorManager.primary,
+                                      fontSize: FontSize.s14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSize.s8),
+                                  GestureDetector(
+                                    onTap: () => context.read<CartBloc>().add(
+                                      RemoveCartItemEvent(item.id),
+                                    ),
+                                    child: const Icon(
+                                      Icons.delete_outline,
+                                      color: ColorManager.error,
+                                      size: AppSize.s20,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     },
                   ),
                 ),
 
-                // ── Order Summary ────────────────
+                // ── Total & Checkout ────────────
                 Container(
                   padding: const EdgeInsets.all(AppPadding.p16),
                   decoration: BoxDecoration(
                     color: ColorManager.white,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(AppRadius.r24),
-                      topRight: Radius.circular(AppRadius.r24),
-                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: ColorManager.grey.withOpacity(0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, -4),
+                        color: ColorManager.grey.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, -2),
                       ),
                     ],
                   ),
                   child: Column(
                     children: [
-                      // Items Count
+                      // ── Total ──────────────────
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "Items (${state.cartItems.length})",
-                            style: getRegularStyle(
-                              color: ColorManager.textSecondary,
-                              fontSize: FontSize.s14,
-                            ),
-                          ),
-                          Text(
-                            "EGP ${state.totalPrice.toStringAsFixed(0)}",
+                            "Total:",
                             style: getMediumStyle(
-                              color: ColorManager.textPrimary,
-                              fontSize: FontSize.s14,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: AppSize.s8),
-                      const Divider(color: ColorManager.lightGrey),
-                      const SizedBox(height: AppSize.s8),
-
-                      // Total Price
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Total",
-                            style: getBoldStyle(
                               color: ColorManager.textPrimary,
                               fontSize: FontSize.s16,
                             ),
                           ),
                           Text(
-                            "EGP ${state.totalPrice.toStringAsFixed(0)}",
+                            "EGP ${total.toStringAsFixed(0)}",
                             style: getBoldStyle(
                               color: ColorManager.primary,
-                              fontSize: FontSize.s18,
+                              fontSize: FontSize.s20,
                             ),
                           ),
                         ],
@@ -218,12 +287,41 @@ class _CartScreenState extends State<CartScreen> {
 
                       const SizedBox(height: AppSize.s16),
 
-                      // Checkout Button
-                      MainButton(
-                        title: "Proceed to Checkout",
-                        onPressed: () {
-                          // ⚠️ هيتكمل لما الـ Backend يبعت الـ API
-                        },
+                      // ── Checkout Button ────────
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // TODO: Checkout
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Order placed successfully!"),
+                                backgroundColor: ColorManager.success,
+                              ),
+                            );
+                            context.read<CartBloc>().add(
+                              const ClearCartEvent(),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorManager.primary,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: AppPadding.p16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.r12,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            "Checkout",
+                            style: getBoldStyle(
+                              color: ColorManager.white,
+                              fontSize: FontSize.s16,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -238,49 +336,31 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
-  void _showClearCartDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          "Clear Cart",
-          style: getBoldStyle(
-            color: ColorManager.textPrimary,
-            fontSize: FontSize.s18,
-          ),
+  Widget _buildQuantityButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppPadding.p4),
+        decoration: BoxDecoration(
+          color: ColorManager.primary.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(AppRadius.r4),
         ),
-        content: Text(
-          "Are you sure you want to clear your cart?",
-          style: getRegularStyle(
-            color: ColorManager.textSecondary,
-            fontSize: FontSize.s14,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Cancel",
-              style: getMediumStyle(
-                color: ColorManager.grey,
-                fontSize: FontSize.s14,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<CartBloc>().add(const ClearCartEvent());
-            },
-            child: Text(
-              "Clear",
-              style: getMediumStyle(
-                color: ColorManager.error,
-                fontSize: FontSize.s14,
-              ),
-            ),
-          ),
-        ],
+        child: Icon(icon, color: ColorManager.primary, size: AppSize.s16),
+      ),
+    );
+  }
+
+  Widget _buildImageError() {
+    return Container(
+      width: AppSize.s80,
+      height: AppSize.s80,
+      color: ColorManager.lightGrey,
+      child: const Icon(
+        Icons.image_not_supported_outlined,
+        color: ColorManager.grey,
       ),
     );
   }

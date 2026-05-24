@@ -5,9 +5,7 @@ import 'package:graduation_project/config/routes_manager/route_generator.dart';
 import 'package:graduation_project/config/routes_manager/routes.dart';
 // Core
 import 'package:graduation_project/core/cache/shared_pref.dart';
-import 'package:graduation_project/core/local_db/hive_helper.dart';
 import 'package:graduation_project/core/network/check_internet_connection.dart';
-import 'package:graduation_project/core/utils/observer.dart';
 // Auth
 import 'package:graduation_project/features/auth/data/dataSources/local/auth_local_data_source_impl.dart';
 import 'package:graduation_project/features/auth/data/dataSources/remote/auth_remote_ds_impl.dart';
@@ -15,8 +13,6 @@ import 'package:graduation_project/features/auth/data/repository/auth_repo_impl.
 import 'package:graduation_project/features/auth/domin/usecases/login_usecase.dart';
 import 'package:graduation_project/features/auth/domin/usecases/signUp_usecase.dart';
 import 'package:graduation_project/features/auth/presentation/bloc/auth_bloc.dart';
-// Cart
-import 'package:graduation_project/features/cart/data/dataSources/local/cart_local_data_source.dart';
 import 'package:graduation_project/features/cart/data/dataSources/remote/cart_remote_data_source.dart';
 import 'package:graduation_project/features/cart/data/repository/cart_repo_impl.dart';
 import 'package:graduation_project/features/cart/domain/usecases/add_cart_item_usecase.dart';
@@ -73,20 +69,26 @@ import 'package:graduation_project/features/profile_tab/domain/usecases/logout_u
 import 'package:graduation_project/features/profile_tab/domain/usecases/update_profile_usecase.dart';
 import 'package:graduation_project/features/profile_tab/presentation/bloc/profile_bloc.dart';
 import 'package:graduation_project/features/profile_tab/presentation/bloc/profile_event.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
+import 'core/local_db/hive_constants.dart';
+import 'features/cart/data/dataSources/local/cart_local_data_source_impl.dart';
+import 'features/cart/data/models/cart_item_model.dart';
 import 'features/home/presentation/bloc/home_event.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
 
-  // Initialize services
+  // ✅ Register adapters
+  Hive.registerAdapter(CartItemModelAdapter());
+
+  // ✅ Open boxes
+  await Hive.openBox<CartItemModel>(HiveConstants.cartBox);
+  // await Hive.openBox<FavouriteModel>(HiveConstants.favouritesBox);
+
   await SharedPref.init();
-  await HiveHelper.init();
-
-  // Set BLoC observer
-  Bloc.observer = AppBlocObserver();
-
   runApp(const MyApp());
 }
 

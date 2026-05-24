@@ -42,7 +42,7 @@ class CartItemWidget extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.r8),
             child: Image.network(
-              item.productImage,
+              item.image,
               width: AppSize.s80,
               height: AppSize.s80,
               fit: BoxFit.cover,
@@ -67,7 +67,7 @@ class CartItemWidget extends StatelessWidget {
               children: [
                 // Product Name
                 Text(
-                  item.productName,
+                  item.name,
                   style: getMediumStyle(
                     color: ColorManager.textPrimary,
                     fontSize: FontSize.s14,

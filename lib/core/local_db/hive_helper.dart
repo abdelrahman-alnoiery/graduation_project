@@ -6,8 +6,11 @@ import 'hive_constants.dart';
 class HiveHelper {
   static Future<void> init() async {
     await Hive.initFlutter();
+
     // ── Register Adapters ─────────────────────────
     Hive.registerAdapter(CartItemModelAdapter());
+    // ✅ لو عندك FavouriteModelAdapter أضفه هنا
+    // Hive.registerAdapter(FavouriteModelAdapter());
 
     // ── Open Boxes ────────────────────────────────
     await Hive.openBox<CartItemModel>(HiveConstants.cartBox);

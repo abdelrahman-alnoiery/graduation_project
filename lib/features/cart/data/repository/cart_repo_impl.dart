@@ -1,52 +1,31 @@
 import 'package:dartz/dartz.dart';
-import 'package:graduation_project/core/exceptions/exceptions.dart';
+import 'package:graduation_project/core/exceptions/failuers.dart';
 import 'package:graduation_project/core/network/check_internet_connection.dart';
-import 'package:graduation_project/features/cart/data/models/cart_item_model.dart';
+import 'package:graduation_project/features/cart/data/dataSources/local/cart_local_data_source.dart';
+import 'package:graduation_project/features/cart/data/dataSources/remote/cart_remote_data_source.dart';
+import 'package:graduation_project/features/cart/domain/repository/cart_repo.dart';
 
-import '../../../../core/exceptions/failuers.dart';
 import '../../domain/entity/cart_item_entity.dart';
-import '../../domain/repository/cart_repo.dart';
-import '../dataSources/local/cart_local_data_source.dart';
-import '../dataSources/remote/cart_remote_data_source.dart';
 
 class CartRepoImpl implements CartRepo {
-  final CartRemoteDataSource remoteDataSource;
   final CartLocalDataSource localDataSource;
-  final CheckInternetConnection networkInfo;
 
   CartRepoImpl({
-    required this.remoteDataSource,
     required this.localDataSource,
-    required this.networkInfo,
+    required CartRemoteDataSourceImpl remoteDataSource,
+    required CheckInternetConnectionImpl networkInfo,
   });
 
-  // ── Get Cart Items ────────────────────────────────
   @override
   Future<Either<Failure, List<CartItemEntity>>> getCartItems() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteItems = await remoteDataSource.getCartItems();
-        await localDataSource.clearCart();
-        for (var item in remoteItems) {
-          await localDataSource.addCartItem(item);
-        }
-        return Right(remoteItems);
-      } on NetworkException catch (e) {
-        return Left(
-          NetworkFailure(message: e.message, statusCode: e.statusCode),
-        );
-      }
-    } else {
-      try {
-        final localItems = await localDataSource.getCartItems();
-        return Right(localItems);
-      } on CacheException catch (e) {
-        return Left(CacheFailure(message: e.message));
-      }
+    try {
+      final items = await localDataSource.getCartItems();
+      return Right(items);
+    } catch (e) {
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 
-  // ── Add Cart Item ─────────────────────────────────
   @override
   Future<Either<Failure, void>> addCartItem({
     required String productId,
@@ -56,90 +35,52 @@ class CartRepoImpl implements CartRepo {
     required int quantity,
   }) async {
     try {
-      final item = CartItemModel(
+      await localDataSource.addCartItem(
         productId: productId,
         productName: productName,
         productImage: productImage,
         price: price,
         quantity: quantity,
       );
-
-      // Save locally first
-      await localDataSource.addCartItem(item);
-
-      // Sync with remote if connected
-      if (await networkInfo.isConnected) {
-        await remoteDataSource.addCartItem(productId, quantity);
-      }
-
       return const Right(null);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 
-  // ── Remove Cart Item ──────────────────────────────
   @override
   Future<Either<Failure, void>> removeCartItem(String productId) async {
     try {
-      // Remove locally first
       await localDataSource.removeCartItem(productId);
-
-      // Sync with remote if connected
-      if (await networkInfo.isConnected) {
-        await remoteDataSource.removeCartItem(productId);
-      }
-
       return const Right(null);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 
-  // ── Update Cart Item Quantity ─────────────────────
   @override
-  Future<Either<Failure, void>> updateCartItemQuantity({
+  Future<Either<Failure, void>> updateCartItem({
     required String productId,
     required int quantity,
   }) async {
     try {
-      // Update locally first
-      await localDataSource.updateCartItemQuantity(productId, quantity);
-
-      // Sync with remote if connected
-      if (await networkInfo.isConnected) {
-        await remoteDataSource.updateCartItemQuantity(productId, quantity);
-      }
-
+      await localDataSource.updateCartItem(
+        productId: productId,
+        quantity: quantity,
+      );
       return const Right(null);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 
-  // ── Clear Cart ────────────────────────────────────
   @override
   Future<Either<Failure, void>> clearCart() async {
     try {
-      // Clear locally first
       await localDataSource.clearCart();
-
-      // Sync with remote if connected
-      if (await networkInfo.isConnected) {
-        await remoteDataSource.clearCart();
-      }
-
       return const Right(null);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
-    } on CacheException catch (e) {
-      return Left(CacheFailure(message: e.message));
+    } catch (e) {
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 }

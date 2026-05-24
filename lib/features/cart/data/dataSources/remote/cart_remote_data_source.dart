@@ -14,19 +14,9 @@ abstract class CartRemoteDataSource {
 }
 
 class CartRemoteDataSourceImpl implements CartRemoteDataSource {
-  // ── Get Cart Items ────────────────────────────────
   @override
   Future<List<CartItemModel>> getCartItems() async {
-    try {
-      final response = await ApiManager.get(EndPoints.cart);
-      return (response.data['items'] as List)
-          .map((item) => CartItemModel.fromJson(item))
-          .toList();
-    } on DioException catch (e) {
-      throw NetworkException.fromDioError(e);
-    } catch (e) {
-      throw NetworkException(message: e.toString());
-    }
+    return []; // ✅ Local only
   }
 
   // ── Add Cart Item ─────────────────────────────────

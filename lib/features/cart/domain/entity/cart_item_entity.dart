@@ -1,14 +1,14 @@
 class CartItemEntity {
-  final String productId;
-  final String productName;
-  final String productImage;
+  final String id;
+  final String name;
+  final String image;
   final double price;
   final int quantity;
 
   const CartItemEntity({
-    required this.productId,
-    required this.productName,
-    required this.productImage,
+    required this.id,
+    required this.name,
+    required this.image,
     required this.price,
     required this.quantity,
   });

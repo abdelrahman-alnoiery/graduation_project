@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
+import 'package:graduation_project/core/exceptions/failuers.dart';
 
-import '../../../../core/exceptions/failuers.dart';
 import '../entity/cart_item_entity.dart';
 
 abstract class CartRepo {
@@ -13,7 +13,7 @@ abstract class CartRepo {
     required int quantity,
   });
   Future<Either<Failure, void>> removeCartItem(String productId);
-  Future<Either<Failure, void>> updateCartItemQuantity({
+  Future<Either<Failure, void>> updateCartItem({
     required String productId,
     required int quantity,
   });

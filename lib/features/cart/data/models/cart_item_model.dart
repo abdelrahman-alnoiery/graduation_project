@@ -1,4 +1,4 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
 
 import '../../domain/entity/cart_item_entity.dart';
 
@@ -28,49 +28,30 @@ class CartItemModel extends CartItemEntity {
     required this.price,
     required this.quantity,
   }) : super(
-         productId: productId,
-         productName: productName,
-         productImage: productImage,
+         id: productId,
+         name: productName,
+         image: productImage,
          price: price,
          quantity: quantity,
        );
 
-  // ── From Json ─────────────────────────────────────
-  factory CartItemModel.fromJson(Map<String, dynamic> json) {
+  CartItemModel copyWith({int? quantity}) {
     return CartItemModel(
-      productId: json['product_id'] ?? '',
-      productName: json['product_name'] ?? '',
-      productImage: json['product_image'] ?? '',
-      price: (json['price'] as num).toDouble(),
-      quantity: json['quantity'] ?? 1,
+      productId: productId,
+      productName: productName,
+      productImage: productImage,
+      price: price,
+      quantity: quantity ?? this.quantity,
     );
   }
 
-  // ── To Json ───────────────────────────────────────
-  Map<String, dynamic> toJson() {
-    return {
-      'product_id': productId,
-      'product_name': productName,
-      'product_image': productImage,
-      'price': price,
-      'quantity': quantity,
-    };
-  }
-
-  // ── Copy With ─────────────────────────────────────
-  CartItemModel copyWith({
-    String? productId,
-    String? productName,
-    String? productImage,
-    double? price,
-    int? quantity,
-  }) {
+  factory CartItemModel.fromEntity(CartItemEntity entity) {
     return CartItemModel(
-      productId: productId ?? this.productId,
-      productName: productName ?? this.productName,
-      productImage: productImage ?? this.productImage,
-      price: price ?? this.price,
-      quantity: quantity ?? this.quantity,
+      productId: entity.id,
+      productName: entity.name,
+      productImage: entity.image,
+      price: entity.price,
+      quantity: entity.quantity,
     );
   }
 }

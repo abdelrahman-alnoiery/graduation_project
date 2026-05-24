@@ -24,14 +24,12 @@ class AddCartItemEvent extends CartEvent {
 
 class RemoveCartItemEvent extends CartEvent {
   final String productId;
-
   const RemoveCartItemEvent(this.productId);
 }
 
 class UpdateCartItemEvent extends CartEvent {
   final String productId;
   final int quantity;
-
   const UpdateCartItemEvent({required this.productId, required this.quantity});
 }
 
