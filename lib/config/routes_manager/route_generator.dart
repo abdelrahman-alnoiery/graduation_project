@@ -8,6 +8,7 @@ import '../../features/cart/presentation/ui/screens/cart_screen.dart';
 import '../../features/categories/presentation/screens/categories_screen.dart';
 import '../../features/chat_bot/presentation/screens/chatbot_screen.dart';
 import '../../features/favourite/presentation/ui/screens/favourites_screen.dart';
+import '../../features/home/domain/entity/product_entity.dart';
 import '../../features/main_layout/main_layout.dart';
 import '../../features/product_details/presentation/screens/product_details_screen.dart';
 import '../../features/products_screen/presentation/screens/products_screen.dart';
@@ -51,7 +52,10 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ProductsScreen());
 
       case Routes.productDetails:
-        return MaterialPageRoute(builder: (_) => const ProductsDetails());
+        final product = settings.arguments as ProductEntity;
+        return MaterialPageRoute(
+          builder: (_) => ProductDetailsScreen(product: product),
+        );
 
       // case Routes.itemPreviewRoute:
       //   return MaterialPageRoute(builder: (_) => const ItemPreviewScreen());

@@ -14,21 +14,33 @@ class ProductModel extends ProductEntity {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    // ✅ الصور جوا colorimage array
-    final colorImages = json['colorimage'] as List? ?? [];
     String firstImage = '';
 
+    // ✅ محاولة 1: colorimage array
+    final colorImages = json['colorimage'] as List? ?? [];
     if (colorImages.isNotEmpty) {
       final images = colorImages.first['images'] as List? ?? [];
       if (images.isNotEmpty) {
         firstImage = images.first?.toString() ?? '';
-        // ✅ لو الصورة relative path أضفلها الـ base URL
-        if (firstImage.isNotEmpty && !firstImage.startsWith('http')) {
-          firstImage =
-              'https://cargo-project-production.up.railway.app/$firstImage';
-        }
       }
     }
+
+    // ✅ محاولة 2: image field مباشرة
+    if (firstImage.isEmpty) {
+      firstImage = json['image']?.toString() ?? '';
+    }
+
+    // ✅ إضافة الـ base URL لو الصورة relative path
+    if (firstImage.isNotEmpty && !firstImage.startsWith('http')) {
+      firstImage = 'https://cargo-project-phi.vercel.app/$firstImage';
+    }
+
+    // ✅ لو مفيش صورة خد placeholder
+    if (firstImage.isEmpty) {
+      firstImage = 'https://via.placeholder.com/200x200.png?text=CarGo';
+    }
+
+    print('Product: ${json['name']} - Image: $firstImage');
 
     return ProductModel(
       id: json['_id']?.toString() ?? '',

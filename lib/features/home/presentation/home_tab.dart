@@ -202,6 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: AppSize.s12),
 
+                          // في الـ Trends section
                           SizedBox(
                             height: AppSize.s150,
                             child: ListView.builder(
@@ -215,31 +216,120 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Routes.productDetails,
                                     arguments: trend,
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
+                                  child: Container(
+                                    width: AppSize.s200,
+                                    margin: const EdgeInsets.only(
                                       right: AppPadding.p12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.r12,
+                                      ),
+                                      color: ColorManager.lightGrey,
                                     ),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
                                         AppRadius.r12,
                                       ),
-                                      child: trend.image.isNotEmpty
-                                          ? Image.network(
-                                              trend.image,
-                                              width: AppSize.s200,
-                                              height: AppSize.s150,
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (_, __, ___) =>
-                                                  _buildImageError(),
-                                            )
-                                          : _buildImageError(),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          // ── Image ──────────────────────
+                                          Image.network(
+                                            trend.image,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder:
+                                                (
+                                                  context,
+                                                  child,
+                                                  loadingProgress,
+                                                ) {
+                                                  if (loadingProgress == null)
+                                                    return child;
+                                                  return const Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          color: ColorManager
+                                                              .primary,
+                                                          strokeWidth: 2,
+                                                        ),
+                                                  );
+                                                },
+                                            errorBuilder: (_, __, ___) => Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const Icon(
+                                                  Icons.directions_car,
+                                                  color: ColorManager.primary,
+                                                  size: AppSize.s32,
+                                                ),
+                                                const SizedBox(
+                                                  height: AppSize.s4,
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal:
+                                                            AppPadding.p8,
+                                                      ),
+                                                  child: Text(
+                                                    trend.name,
+                                                    style: getRegularStyle(
+                                                      color: ColorManager
+                                                          .textPrimary,
+                                                      fontSize: FontSize.s10,
+                                                    ),
+                                                    textAlign: TextAlign.center,
+                                                    maxLines: 3,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          // ── Name Overlay ──────────────
+                                          Positioned(
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(
+                                                AppPadding.p8,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  begin: Alignment.bottomCenter,
+                                                  end: Alignment.topCenter,
+                                                  colors: [
+                                                    Colors.black.withOpacity(
+                                                      0.7,
+                                                    ),
+                                                    Colors.transparent,
+                                                  ],
+                                                ),
+                                              ),
+                                              child: Text(
+                                                trend.name,
+                                                style: getMediumStyle(
+                                                  color: ColorManager.white,
+                                                  fontSize: FontSize.s12,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 );
                               },
                             ),
                           ),
-
                           const SizedBox(height: AppSize.s20),
 
                           // ── Best Price ────────────
