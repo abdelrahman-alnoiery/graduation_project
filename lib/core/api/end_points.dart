@@ -18,6 +18,9 @@ class EndPoints {
   static const String updateMe = "/user";
 
   // ── Products ──────────────────────────────────────
+  static const String productSearch = "/product/search"; // ✅ جديد
+  static const String sellerProductSearch = "/product/seller/search"; // ✅ جديد
+
   static const String products = "/product";
   static const String productDetails = "/product";
   static const String sellerProducts = "/product/seller";
@@ -38,6 +41,7 @@ class EndPoints {
 
   // ── Car Damage Detection ──────────────────────────
   static const String detectDamage = "/detect-damage";
+
   static const String otp = "";
   static const String verify = "";
   static const String categories = "";

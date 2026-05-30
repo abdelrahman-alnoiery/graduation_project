@@ -166,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: Column(
                                     children: [
                                       CircleAvatar(
-                                        radius: AppSize.s24,
+                                        radius: AppSize.s28,
                                         backgroundColor: ColorManager.primary
                                             .withOpacity(0.1),
                                         child: const Icon(

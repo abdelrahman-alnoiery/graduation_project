@@ -190,6 +190,7 @@
 //
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:graduation_project/config/routes_manager/routes.dart';
 import 'package:graduation_project/core/utils/font_manager.dart';
 import 'package:graduation_project/core/utils/styles_manager.dart';
@@ -256,10 +257,12 @@ class _SignInScreenState extends State<SignInScreen> {
                 child: Center(
                   child: Text(
                     "CarGo",
-                    style: getBoldStyle(
-                      color: ColorManager.white,
-                      fontSize: FontSize.s28,
-                    ).copyWith(fontStyle: FontStyle.italic),
+                    style: GoogleFonts.mali(
+                      fontSize: 44,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ),
               ),
