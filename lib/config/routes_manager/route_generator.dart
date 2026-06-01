@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graduation_project/config/routes_manager/routes.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
+import '../../core/network/check_internet_connection.dart';
 import '../../features/Onboarding/Onboarding1.dart';
 import '../../features/auth/presentation/ui/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/ui/screens/sign_up_screen.dart';
 import '../../features/cart/presentation/ui/screens/cart_screen.dart';
+import '../../features/categories/domain/entity/category_entity.dart';
 import '../../features/categories/presentation/screens/categories_screen.dart';
 import '../../features/chat_bot/presentation/screens/chatbot_screen.dart';
 import '../../features/favourite/presentation/ui/screens/favourites_screen.dart';
 import '../../features/home/domain/entity/product_entity.dart';
 import '../../features/main_layout/main_layout.dart';
 import '../../features/product_details/presentation/screens/product_details_screen.dart';
+import '../../features/products_screen/data/dataSources/remote/products_remote_data_source_impl.dart';
+import '../../features/products_screen/data/repository/products_repo_impl.dart';
+import '../../features/products_screen/domain/usecases/get_all_products_usecase.dart';
+import '../../features/products_screen/domain/usecases/get_products_by_category_usecase.dart';
+import '../../features/products_screen/presentation/bloc/products_bloc.dart';
 import '../../features/products_screen/presentation/screens/products_screen.dart';
 import '../../features/profile_tab/presentation/screens/profile_screen.dart';
 import '../../features/splashScreen/presentation/ui/splash_screen.dart';
@@ -49,7 +58,30 @@ class RouteGenerator {
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
 
       case Routes.productsScreenRoute:
-        return MaterialPageRoute(builder: (_) => const ProductsScreen());
+        final category = settings.arguments as CategoryEntity?;
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (context) => ProductsBloc(
+              getAllProductsUseCase: GetAllProductsUseCase(
+                ProductsRepoImpl(
+                  remoteDataSource: ProductsRemoteDataSourceImpl(),
+                  networkInfo: CheckInternetConnectionImpl(
+                    InternetConnectionChecker(),
+                  ),
+                ),
+              ),
+              getProductsByCategoryUseCase: GetProductsByCategoryUseCase(
+                ProductsRepoImpl(
+                  remoteDataSource: ProductsRemoteDataSourceImpl(),
+                  networkInfo: CheckInternetConnectionImpl(
+                    InternetConnectionChecker(),
+                  ),
+                ),
+              ),
+            ),
+            child: ProductsScreen(category: category),
+          ),
+        );
 
       case Routes.productDetails:
         final product = settings.arguments as ProductEntity;

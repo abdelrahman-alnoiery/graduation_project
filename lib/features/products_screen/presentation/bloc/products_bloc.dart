@@ -1,16 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:graduation_project/features/products_screen/domain/usecases/get_all_products_usecase.dart';
+import 'package:graduation_project/features/products_screen/domain/usecases/get_products_by_category_usecase.dart';
 
-import '../../../home/domain/usecases/get_products_usecase.dart';
-import '../../domain/usecases/get_products_by_category_usecase.dart';
 import 'products_event.dart';
 import 'products_state.dart';
 
 class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
-  final GetProductsUseCase getProductsUseCase;
+  final GetAllProductsUseCase getAllProductsUseCase;
   final GetProductsByCategoryUseCase getProductsByCategoryUseCase;
 
   ProductsBloc({
-    required this.getProductsUseCase,
+    required this.getAllProductsUseCase,
     required this.getProductsByCategoryUseCase,
   }) : super(const ProductsInitialState()) {
     on<GetProductsEvent>(_onGetProducts);
@@ -24,12 +24,11 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
 
     final result = event.categoryId != null
         ? await getProductsByCategoryUseCase(event.categoryId!)
-        : await getProductsUseCase();
+        : await getAllProductsUseCase();
 
     result.fold((failure) => emit(ProductsErrorState(failure.message)), (
       products,
     ) {
-      // ✅ Filter by search query locally
       var filtered = products;
       if (event.searchQuery != null && event.searchQuery!.isNotEmpty) {
         filtered = products

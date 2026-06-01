@@ -187,7 +187,6 @@ class MyApp extends StatelessWidget {
           getProductsByCategoryUseCase: GetProductsByCategoryUseCase(
             productsRepo,
           ),
-          GetAllProductsUsecase: null,
         ),
       ),
 
