@@ -25,13 +25,25 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
 
     final result = event.categoryId != null
         ? await getProductsByCategoryUseCase(event.categoryId!)
-        : await getAllProductsUseCase();
+        : await getAllProductsUseCase(); // ✅ استخدم المتغير الصحيح
 
-    result.fold(
-      (failure) => emit(ProductsErrorState(failure.message)),
-      (products) => products.isEmpty
+    result.fold((failure) => emit(ProductsErrorState(failure.message)), (
+      products,
+    ) {
+      var filtered = products;
+      if (event.searchQuery != null && event.searchQuery!.isNotEmpty) {
+        filtered = products
+            .where(
+              (p) => p.name.toLowerCase().contains(
+                event.searchQuery!.toLowerCase(),
+              ),
+            )
+            .toList();
+      }
+
+      filtered.isEmpty
           ? emit(const ProductsEmptyState())
-          : emit(ProductsSuccessState(products)),
-    );
+          : emit(ProductsSuccessState(filtered));
+    });
   }
 }

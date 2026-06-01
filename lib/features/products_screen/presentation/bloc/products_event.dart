@@ -4,5 +4,7 @@ abstract class ProductsEvent {
 
 class GetProductsEvent extends ProductsEvent {
   final String? categoryId;
-  const GetProductsEvent({this.categoryId});
+  final String? searchQuery;
+
+  const GetProductsEvent({this.categoryId, this.searchQuery});
 }
