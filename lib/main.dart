@@ -102,7 +102,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'CarGo',
-        initialRoute: Routes.signInRoute,
+        initialRoute: Routes.homePageLayoutRoute,
         onGenerateRoute: RouteGenerator.getRoute,
       ),
     );

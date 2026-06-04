@@ -85,7 +85,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ],
                             ),
                             child: const Icon(
-                              Icons.arrow_back_ios,
+                              Icons.arrow_back,
                               color: ColorManager.textPrimary,
                               size: AppSize.s20,
                             ),

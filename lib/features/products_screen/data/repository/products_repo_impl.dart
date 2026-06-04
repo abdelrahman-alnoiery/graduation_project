@@ -20,7 +20,7 @@ class ProductsRepoImpl implements ProductsRepo {
     }
     try {
       final products = await remoteDataSource.getAllProducts();
-      return Right(products);
+      return Right(products); // ✅ حتى لو فاضية
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -37,7 +37,7 @@ class ProductsRepoImpl implements ProductsRepo {
     }
     try {
       final products = await remoteDataSource.getProductsByCategory(categoryId);
-      return Right(products);
+      return Right(products); // ✅ حتى لو فاضية
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {

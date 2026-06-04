@@ -110,14 +110,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
           // ── Title Row ────────────────────────────
           Row(
             children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: const Icon(
-                  Icons.arrow_back_ios,
-                  color: ColorManager.white,
-                  size: AppSize.s20,
-                ),
-              ),
+              // GestureDetector(
+              //   onTap: () => Navigator.pop(context),
+              //   child: const Icon(
+              //     Icons.arrow_back,
+              //     color: ColorManager.white,
+              //     size: AppSize.s20,
+              //   ),
+              // ),
               const SizedBox(width: AppSize.s12),
               Expanded(
                 child: Text(
