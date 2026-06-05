@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
+import 'package:graduation_project/core/exceptions/failuers.dart';
 import 'package:graduation_project/features/favourite/domain/repository/favourite_repo.dart';
 
-import '../../../../core/exceptions/failuers.dart';
 import '../entity/favourite_entity.dart';
 
 class GetFavouritesUseCase {
