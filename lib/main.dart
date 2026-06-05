@@ -81,12 +81,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
 
-  // ✅ Register adapters
   Hive.registerAdapter(CartItemModelAdapter());
-
-  // ✅ Open boxes
   await Hive.openBox<CartItemModel>(HiveConstants.cartBox);
-  // await Hive.openBox<FavouriteModel>(HiveConstants.favouritesBox);
+  await Hive.openBox(HiveConstants.favoritesBox); // ✅ مهم
+  await Hive.openBox(HiveConstants.userBox);
 
   await SharedPref.init();
   runApp(const MyApp());

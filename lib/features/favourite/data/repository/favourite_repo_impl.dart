@@ -1,61 +1,72 @@
 import 'package:dartz/dartz.dart';
-import 'package:graduation_project/core/exceptions/exceptions.dart';
+import 'package:graduation_project/core/exceptions/failuers.dart';
+import 'package:graduation_project/core/local_db/hive_constants.dart';
 import 'package:graduation_project/core/network/check_internet_connection.dart';
-import 'package:graduation_project/features/favourite/data/models/favourite_model.dart';
+import 'package:graduation_project/features/favourite/data/dataSources/remote/favourite_remote_data_source.dart';
 import 'package:graduation_project/features/favourite/domain/repository/favourite_repo.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-import '../../../../core/exceptions/failuers.dart';
 import '../../domain/entity/favourite_entity.dart';
-import '../dataSources/remote/favourite_remote_data_source.dart';
 
 class FavouriteRepoImpl implements FavouriteRepo {
   final FavouriteRemoteDataSource remoteDataSource;
-  final CheckInternetConnection networkInfo;
 
   FavouriteRepoImpl({
     required this.remoteDataSource,
-    required this.networkInfo,
+    required CheckInternetConnectionImpl networkInfo,
   });
+
+  // ── Get Hive Box ──────────────────────────────────
+  Box get _box => Hive.box(HiveConstants.favoritesBox);
 
   // ── Get Favourites ────────────────────────────────
   @override
   Future<Either<Failure, List<FavouriteEntity>>> getFavourites() async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: "No internet connection"));
-    }
     try {
-      final favourites = await remoteDataSource.getFavourites();
+      final items = _box.values.toList();
+      final favourites = items.map((item) {
+        final map = Map<String, dynamic>.from(item as Map);
+        return FavouriteEntity(
+          id: map['id'] ?? '',
+          name: map['name'] ?? '',
+          image: map['image'] ?? '',
+          price: (map['price'] as num? ?? 0).toDouble(),
+        );
+      }).toList();
       return Right(favourites);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 
   // ── Add Favourite ─────────────────────────────────
   @override
-  Future<Either<Failure, void>> addFavourite(String productId) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: "No internet connection"));
-    }
+  Future<Either<Failure, void>> addFavourite(FavouriteEntity item) async {
     try {
-      await remoteDataSource.addFavourite(productId as FavouriteModel);
+      final box = Hive.box(HiveConstants.favoritesBox);
+      await box.put(item.id, {
+        'id': item.id,
+        'name': item.name,
+        'image': item.image,
+        'price': item.price,
+      });
+      print('✅ Saved to Hive: ${item.name}');
       return const Right(null);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      print('❌ Hive error: $e');
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 
   // ── Remove Favourite ──────────────────────────────
   @override
   Future<Either<Failure, void>> removeFavourite(String productId) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: "No internet connection"));
-    }
     try {
-      await remoteDataSource.removeFavourite(productId);
+      await _box.delete(productId);
+      print('✅ Removed from favourites: $productId');
       return const Right(null);
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message, statusCode: e.statusCode));
+    } catch (e) {
+      return Left(NetworkFailure(message: e.toString()));
     }
   }
 }

@@ -66,79 +66,52 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   // ── Helper: Fetch Trending ────────────────────────
   Future<List<ProductModel>> _fetchTrending({int limit = 20}) async {
-    // ✅ لو الـ cache valid ارجع منه
-    // ── Helper: Check Cache Valid ─────────────────────
+    // ✅ Check cache
     bool _isCacheValid() {
-      final timeStr = SharedPref.getString(_cacheTimeKey);
-
-      if (timeStr == null) {
-        return false;
-      }
-
-      final cacheTime = DateTime.tryParse(timeStr);
-
-      if (cacheTime == null) {
-        return false;
-      }
-
-      final ageInMinutes = DateTime.now().difference(cacheTime).inMinutes;
-
-      return ageInMinutes < _cacheDurationMinutes;
-    }
-
-    // ✅ جرب الـ API
-    int retries = 0;
-    while (retries < 3) {
       try {
-        final response = await ApiManager.get(
-          "${EndPoints.trendingRecommend}?limit=$limit",
-        );
-        print('Trending Response: ${response.statusCode}');
-        final List data = response.data['data'] ?? [];
-        final products = data.map((p) => ProductModel.fromJson(p)).toList();
-
-        if (products.isNotEmpty) {
-          await _saveToCache(products); // ✅ حفظ في الـ cache
-        }
-        return products;
-      } on DioException catch (e) {
-        retries++;
-        print('Trending Error (retry $retries): ${e.response?.statusCode}');
-
-        // ✅ لو فيه cache قديم استخدمه كـ fallback
-        if (retries == 2) {
-          final cached = _getFromCache();
-          if (cached != null && cached.isNotEmpty) {
-            print('⚠️ Using stale cache: ${cached.length} products');
-            return cached;
-          }
-        }
-
-        if (retries == 3) {
-          // ✅ آخر محاولة: جرب الـ user recommend
-          try {
-            final userId = SharedPref.getString('user_id') ?? '';
-            final response2 = await ApiManager.get(
-              "${EndPoints.userRecommend}?userId=$userId",
-            );
-            final List data = response2.data['data'] ?? [];
-            final products = data.map((p) => ProductModel.fromJson(p)).toList();
-            if (products.isNotEmpty) {
-              await _saveToCache(products);
-            }
-            return products;
-          } catch (e2) {
-            // ✅ آخر fallback: الـ cache القديم مهما كان
-            final cached = _getFromCache();
-            return cached ?? [];
-          }
-        }
-        await Future.delayed(const Duration(seconds: 3));
+        final timeStr = SharedPref.getString(_cacheTimeKey);
+        if (timeStr == null || timeStr.isEmpty) return false;
+        final cacheTime = DateTime.tryParse(timeStr);
+        if (cacheTime == null) return false;
+        final diff = DateTime.now().difference(cacheTime).inMinutes;
+        return diff < _cacheDurationMinutes;
       } catch (e) {
-        final cached = _getFromCache();
-        return cached ?? [];
+        return false;
       }
     }
+
+    // ✅ جرب content recommend
+    try {
+      final response = await ApiManager.get(
+        "${EndPoints.contentRecommend}?itemName=car",
+      );
+      final List data = response.data['data'] ?? [];
+      final products = data.map((p) => ProductModel.fromJson(p)).toList();
+      if (products.isNotEmpty) {
+        await _saveToCache(products);
+        print('✅ From content recommend: ${products.length}');
+        return products;
+      }
+    } catch (e) {
+      print('Content recommend failed: $e');
+    }
+
+    // ✅ جرب trending
+    try {
+      final response = await ApiManager.get(
+        "${EndPoints.trendingRecommend}?limit=$limit",
+      );
+      final List data = response.data['data'] ?? [];
+      final products = data.map((p) => ProductModel.fromJson(p)).toList();
+      if (products.isNotEmpty) {
+        await _saveToCache(products);
+        return products;
+      }
+    } catch (e) {
+      print('Trending failed: $e');
+    }
+
+    // ✅ آخر fallback: الـ cache القديم
     return _getFromCache() ?? [];
   }
 
@@ -171,6 +144,10 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       ),
       BrandModel(id: '5', name: 'KIA', image: ''),
       BrandModel(id: '6', name: 'Nissan', image: ''),
+      BrandModel(id: '8', name: 'Audi', image: ''),
+      BrandModel(id: '9', name: 'Skoda', image: ''),
+      BrandModel(id: '7', name: 'Ford', image: ''),
+      BrandModel(id: '10', name: 'Honda', image: ''),
     ];
   }
 

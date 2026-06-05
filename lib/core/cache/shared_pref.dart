@@ -12,8 +12,9 @@ class SharedPref {
     return await _prefs.setString(key, value);
   }
 
+  // في shared_pref.dart
   static String? getString(String key) {
-    return _prefs.getString(key);
+    return _prefs?.getString(key); // ✅ بيرجع String? مش Object?
   }
 
   // ── Bool ──────────────────────────────────────────

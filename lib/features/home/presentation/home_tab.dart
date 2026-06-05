@@ -8,12 +8,16 @@ import 'package:graduation_project/core/utils/values_manager.dart';
 import 'package:graduation_project/features/cart/presentation/bloc/cart_bloc.dart';
 import 'package:graduation_project/features/cart/presentation/bloc/cart_event.dart';
 import 'package:graduation_project/features/cart/presentation/bloc/cart_state.dart';
+import 'package:graduation_project/features/favourite/presentation/bloc/favourite_bloc.dart';
+import 'package:graduation_project/features/favourite/presentation/bloc/favourite_event.dart';
+import 'package:graduation_project/features/favourite/presentation/bloc/favourite_state.dart';
 import 'package:graduation_project/features/home/presentation/bloc/home_bloc.dart';
 import 'package:graduation_project/features/home/presentation/bloc/home_event.dart';
 import 'package:graduation_project/features/home/presentation/bloc/home_state.dart';
 
 import '../../../core/utils/color_maanger.dart';
 import '../../../core/utils/components/product_card.dart';
+import '../../favourite/domain/entity/favourite_entity.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,6 +33,54 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // ── Brand Logo URLs ───────────────────────────────
+  String _getBrandLogo(String brandName) {
+    const logos = {
+      'Toyota': 'assets/images/png/toyota.png',
+      'BMW': 'assets/images/png/bmw.png',
+      'Mercedes': 'assets/images/png/Mercedes.png',
+      'Hyundai': 'assets/images/png/hyundai.png',
+      'KIA': 'assets/images/png/kia.png',
+      'Nissan': 'assets/images/png/Nissan.jpeg',
+      'Audi': 'assets/images/png/Audi.jpeg',
+      'Skoda': 'assets/images/png/skoda.png',
+      'Ford': 'assets/images/png/ford.png',
+      'Honda': 'assets/images/png/honda.png',
+    };
+    return logos[brandName] ?? '';
+  }
+
+  // ── Trend Placeholder ─────────────────────────────
+  Widget _buildTrendPlaceholder(String name) {
+    return Container(
+      color: ColorManager.primary.withOpacity(0.1),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.directions_car,
+            color: ColorManager.primary,
+            size: AppSize.s48,
+          ),
+          const SizedBox(height: AppSize.s8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppPadding.p16),
+            child: Text(
+              name,
+              style: getMediumStyle(
+                color: ColorManager.primary,
+                fontSize: FontSize.s14,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -141,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // ── Global Company ───────
+                          // ── Global Company ────────────────────────────────
                           Text(
                             "Global Company",
                             style: getBoldStyle(
@@ -151,9 +203,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: AppSize.s12),
 
-                          // ── Brands Row ───────────
+                          // ── Brands Row ────────────────────────────────────
                           SizedBox(
-                            height: AppSize.s80,
+                            height: AppSize.s90,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: state.brands.length,
@@ -165,17 +217,45 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   child: Column(
                                     children: [
-                                      CircleAvatar(
-                                        radius: AppSize.s28,
-                                        backgroundColor: ColorManager.primary
-                                            .withOpacity(0.1),
-                                        child: const Icon(
-                                          Icons.directions_car,
-                                          color: ColorManager.primary,
-                                          size: AppSize.s20,
+                                      Container(
+                                        width: AppSize.s64,
+                                        height: AppSize.s64,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: ColorManager.grey
+                                                  .withOpacity(0.15),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: ClipOval(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(
+                                              AppPadding.p8,
+                                            ),
+                                            child: Image.asset(
+                                              _getBrandLogo(brand.name),
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (_, __, ___) =>
+                                                  Center(
+                                                    child: Text(
+                                                      brand.name[0],
+                                                      style: getBoldStyle(
+                                                        color: ColorManager
+                                                            .primary,
+                                                        fontSize: FontSize.s20,
+                                                      ),
+                                                    ),
+                                                  ),
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                      const SizedBox(height: AppSize.s4),
+                                      const SizedBox(height: AppSize.s6),
                                       Text(
                                         brand.name,
                                         style: getRegularStyle(
@@ -192,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           const SizedBox(height: AppSize.s20),
 
-                          // ── Trends ────────────────
+                          // ── Trends ────────────────────────────────────────
                           Text(
                             "Trends",
                             style: getBoldStyle(
@@ -202,133 +282,155 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(height: AppSize.s12),
 
-                          // في الـ Trends section
                           SizedBox(
-                            height: AppSize.s150,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: state.trends.length,
-                              itemBuilder: (context, index) {
-                                final trend = state.trends[index];
-                                return GestureDetector(
-                                  onTap: () => Navigator.pushNamed(
-                                    context,
-                                    Routes.productDetails,
-                                    arguments: trend,
-                                  ),
-                                  child: Container(
-                                    width: AppSize.s200,
-                                    margin: const EdgeInsets.only(
-                                      right: AppPadding.p12,
-                                    ),
+                            height: AppSize.s180,
+                            child: state.trends.isEmpty
+                                ? Container(
+                                    width: double.infinity,
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                        AppRadius.r12,
-                                      ),
                                       color: ColorManager.lightGrey,
-                                    ),
-                                    child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
-                                        AppRadius.r12,
+                                        AppRadius.r16,
                                       ),
-                                      child: Stack(
-                                        fit: StackFit.expand,
-                                        children: [
-                                          // ── Image ──────────────────────
-                                          Image.network(
-                                            trend.image,
-                                            fit: BoxFit.cover,
-                                            loadingBuilder:
-                                                (
-                                                  context,
-                                                  child,
-                                                  loadingProgress,
-                                                ) {
-                                                  if (loadingProgress == null)
-                                                    return child;
-                                                  return const Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          color: ColorManager
-                                                              .primary,
-                                                          strokeWidth: 2,
-                                                        ),
-                                                  );
-                                                },
-                                            errorBuilder: (_, __, ___) => Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.directions_car,
+                                        color: ColorManager.primary,
+                                        size: AppSize.s48,
+                                      ),
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: state.trends.length,
+                                    itemBuilder: (context, index) {
+                                      final trend = state.trends[index];
+                                      return GestureDetector(
+                                        onTap: () => Navigator.pushNamed(
+                                          context,
+                                          Routes.productDetails,
+                                          arguments: trend,
+                                        ),
+                                        child: Container(
+                                          width: AppSize.s260,
+                                          margin: const EdgeInsets.only(
+                                            right: AppPadding.p12,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              AppRadius.r16,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: ColorManager.grey
+                                                    .withOpacity(0.15),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              AppRadius.r16,
+                                            ),
+                                            child: Stack(
+                                              fit: StackFit.expand,
                                               children: [
-                                                const Icon(
-                                                  Icons.directions_car,
-                                                  color: ColorManager.primary,
-                                                  size: AppSize.s32,
-                                                ),
-                                                const SizedBox(
-                                                  height: AppSize.s4,
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal:
-                                                            AppPadding.p8,
+                                                // ── Image ──────────────────
+                                                trend.image.isNotEmpty
+                                                    ? Image.network(
+                                                        trend.image,
+                                                        fit: BoxFit.cover,
+                                                        loadingBuilder: (ctx, child, progress) {
+                                                          if (progress == null)
+                                                            return child;
+                                                          return Container(
+                                                            color: ColorManager
+                                                                .lightGrey,
+                                                            child: const Center(
+                                                              child: CircularProgressIndicator(
+                                                                color:
+                                                                    ColorManager
+                                                                        .primary,
+                                                                strokeWidth: 2,
+                                                              ),
+                                                            ),
+                                                          );
+                                                        },
+                                                        errorBuilder:
+                                                            (_, __, ___) =>
+                                                                _buildTrendPlaceholder(
+                                                                  trend.name,
+                                                                ),
+                                                      )
+                                                    : _buildTrendPlaceholder(
+                                                        trend.name,
                                                       ),
-                                                  child: Text(
-                                                    trend.name,
-                                                    style: getRegularStyle(
-                                                      color: ColorManager
-                                                          .textPrimary,
-                                                      fontSize: FontSize.s10,
+
+                                                // ── Gradient Overlay ───────
+                                                Positioned.fill(
+                                                  child: DecoratedBox(
+                                                    decoration: BoxDecoration(
+                                                      gradient: LinearGradient(
+                                                        begin:
+                                                            Alignment.topCenter,
+                                                        end: Alignment
+                                                            .bottomCenter,
+                                                        colors: [
+                                                          Colors.transparent,
+                                                          Colors.black
+                                                              .withOpacity(0.7),
+                                                        ],
+                                                      ),
                                                     ),
-                                                    textAlign: TextAlign.center,
-                                                    maxLines: 3,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+
+                                                // ── Product Info ───────────
+                                                Positioned(
+                                                  bottom: AppSize.s12,
+                                                  left: AppSize.s12,
+                                                  right: AppSize.s12,
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        trend.name,
+                                                        style: getMediumStyle(
+                                                          color: ColorManager
+                                                              .white,
+                                                          fontSize:
+                                                              FontSize.s14,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                      const SizedBox(
+                                                        height: AppSize.s4,
+                                                      ),
+                                                      Text(
+                                                        "EGP ${trend.price.toStringAsFixed(0)}",
+                                                        style: getBoldStyle(
+                                                          color: ColorManager
+                                                              .white,
+                                                          fontSize:
+                                                              FontSize.s16,
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ),
-
-                                          // ── Name Overlay ──────────────
-                                          Positioned(
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            child: Container(
-                                              padding: const EdgeInsets.all(
-                                                AppPadding.p8,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.bottomCenter,
-                                                  end: Alignment.topCenter,
-                                                  colors: [
-                                                    Colors.black.withOpacity(
-                                                      0.7,
-                                                    ),
-                                                    Colors.transparent,
-                                                  ],
-                                                ),
-                                              ),
-                                              child: Text(
-                                                trend.name,
-                                                style: getMediumStyle(
-                                                  color: ColorManager.white,
-                                                  fontSize: FontSize.s12,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
+                                        ),
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
                           ),
                           const SizedBox(height: AppSize.s20),
 
@@ -353,28 +455,58 @@ class _HomeScreenState extends State<HomeScreen> {
                                   crossAxisSpacing: AppSize.s12,
                                   childAspectRatio: 0.75,
                                 ),
+                            // ── Best Price Grid ───────────────────────────────
                             itemBuilder: (context, index) {
                               final product = state.bestPriceProducts[index];
-                              return ProductCard(
-                                productName: product.name,
-                                productImage: product.image,
-                                price: product.price,
-                                isFavorite: product.isFavorite,
-                                onFavoriteTap: () {},
-                                onCardTap: () => Navigator.pushNamed(
-                                  context,
-                                  Routes.productDetails,
-                                  arguments: product,
-                                ),
-                                onAddToCartTap: () {
-                                  context.read<CartBloc>().add(
-                                    AddCartItemEvent(
-                                      productId: product.id,
-                                      productName: product.name,
-                                      productImage: product.image,
-                                      price: product.price,
-                                      quantity: 1,
+
+                              // ✅ اتحقق من الـ FavouriteBloc
+                              return BlocBuilder<FavouriteBloc, FavouriteState>(
+                                builder: (context, favState) {
+                                  final isFav =
+                                      favState is FavouriteSuccessState &&
+                                      favState.favourites.any(
+                                        (f) => f.id == product.id,
+                                      );
+
+                                  return ProductCard(
+                                    productName: product.name,
+                                    productImage: product.image,
+                                    price: product.price,
+                                    isFavorite: isFav,
+                                    onFavoriteTap: () {
+                                      if (isFav) {
+                                        context.read<FavouriteBloc>().add(
+                                          RemoveFavouriteEvent(product.id),
+                                        );
+                                      } else {
+                                        context.read<FavouriteBloc>().add(
+                                          AddFavouriteEvent(
+                                            FavouriteEntity(
+                                              id: product.id,
+                                              name: product.name,
+                                              image: product.image,
+                                              price: product.price,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    onCardTap: () => Navigator.pushNamed(
+                                      context,
+                                      Routes.productDetails,
+                                      arguments: product,
                                     ),
+                                    onAddToCartTap: () {
+                                      context.read<CartBloc>().add(
+                                        AddCartItemEvent(
+                                          productId: product.id,
+                                          productName: product.name,
+                                          productImage: product.image,
+                                          price: product.price,
+                                          quantity: 1,
+                                        ),
+                                      );
+                                    },
                                   );
                                 },
                               );
