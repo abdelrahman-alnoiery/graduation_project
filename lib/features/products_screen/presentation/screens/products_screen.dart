@@ -434,7 +434,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                               borderRadius: BorderRadius.circular(AppRadius.r8),
                             ),
                             child: const Icon(
-                              Icons.shopping_cart_outlined,
+                              Icons.add_shopping_cart_outlined,
                               color: ColorManager.white,
                               size: AppSize.s16,
                             ),
