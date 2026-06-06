@@ -21,6 +21,19 @@ version: 1.0.0+1
 environment:
   sdk: ^3.8.1
 
+flutter_native_splash:
+  color: "#ffffff"
+#  image: assets/images/png/white_img.png
+  android: true
+  ios: true
+  web: false
+  android_12:
+    color: "#ffffff"
+    image: assets/images/png/white_img.png
+    icon_background_color: "#ffffff"
+
+  fullscreen: true
+
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
 # consider running `flutter pub upgrade --major-versions`. Alternatively,
@@ -48,10 +61,15 @@ dependencies:
   internet_connection_checker: ^1.0.0+1
   dartz: ^0.10.1
   image_picker: ^1.1.2
+  flutter_native_splash: ^2.4.1
+
 
 dev_dependencies:
   hive_generator: ^2.0.1
   build_runner: ^2.4.6
+
+
+
 
   flutter_test:
     sdk: flutter

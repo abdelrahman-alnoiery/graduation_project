@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:graduation_project/config/routes_manager/route_generator.dart';
 // Config
 import 'package:graduation_project/config/routes_manager/routes.dart';
@@ -78,15 +79,20 @@ import 'features/cart/data/models/cart_item_model.dart';
 import 'features/home/presentation/bloc/home_event.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
+  // ✅ لازم يكون أول حاجة
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
+  await Hive.initFlutter();
   Hive.registerAdapter(CartItemModelAdapter());
   await Hive.openBox<CartItemModel>(HiveConstants.cartBox);
-  await Hive.openBox(HiveConstants.favoritesBox); // ✅ مهم
+  await Hive.openBox(HiveConstants.favoritesBox);
   await Hive.openBox(HiveConstants.userBox);
-
   await SharedPref.init();
+
+  // ✅ شيل الـ splash بعد ما الـ app يخلص التحضير
+  FlutterNativeSplash.remove();
+
   runApp(const MyApp());
 }
 
@@ -100,7 +106,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'CarGo',
-        initialRoute: Routes.homePageLayoutRoute,
+        initialRoute: Routes.splashRoute,
         onGenerateRoute: RouteGenerator.getRoute,
       ),
     );
