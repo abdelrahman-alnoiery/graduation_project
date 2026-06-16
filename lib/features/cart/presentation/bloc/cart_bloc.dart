@@ -69,6 +69,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     ClearCartEvent event,
     Emitter<CartState> emit,
   ) async {
+    emit(const CartLoadingState());
     await clearCartUseCase();
     emit(const CartEmptyState());
   }

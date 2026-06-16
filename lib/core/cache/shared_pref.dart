@@ -12,9 +12,13 @@ class SharedPref {
     return await _prefs.setString(key, value);
   }
 
-  // في shared_pref.dart
   static String? getString(String key) {
-    return _prefs?.getString(key); // ✅ بيرجع String? مش Object?
+    return _prefs.getString(key);
+  }
+
+  // ✅ alias عشان الـ products datasource يستخدمه
+  static Future<bool> saveString(String key, String value) async {
+    return await _prefs.setString(key, value);
   }
 
   // ── Bool ──────────────────────────────────────────
@@ -24,6 +28,13 @@ class SharedPref {
 
   static bool? getBool(String key) {
     return _prefs.getBool(key);
+  }
+
+  static Future<void> saveBool({
+    required String key,
+    required bool value,
+  }) async {
+    await _prefs.setBool(key, value);
   }
 
   // ── Int ───────────────────────────────────────────
@@ -45,8 +56,8 @@ class SharedPref {
     return await _prefs.clear();
   }
 
-  static Future<void> saveBool({
-    required String key,
-    required bool value,
-  }) async {}
+  // // ── Contains ─────────────────────────────────────
+  // static bool containsKey(String key) {
+  //   return _prefs.containsKeys().contains(key);
+  // }
 }

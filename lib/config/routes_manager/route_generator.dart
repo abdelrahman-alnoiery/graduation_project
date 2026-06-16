@@ -5,6 +5,11 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../core/network/check_internet_connection.dart';
 import '../../features/Onboarding/Onboarding1.dart';
+import '../../features/add_product/data/dataSources/remote/add_product_remote_datasource_impl.dart';
+import '../../features/add_product/data/repository/add_product_repo_impl.dart';
+import '../../features/add_product/domain/usecases/add_product_usecase.dart';
+import '../../features/add_product/presentation/bloc/add_product_bloc.dart';
+import '../../features/add_product/presentation/ui/add_product_screen.dart';
 import '../../features/auth/presentation/ui/screens/sign_in_screen.dart';
 import '../../features/auth/presentation/ui/screens/sign_up_screen.dart';
 import '../../features/cart/presentation/ui/screens/cart_screen.dart';
@@ -97,21 +102,37 @@ class RouteGenerator {
 
       case Routes.chatbotRoute:
         return MaterialPageRoute(builder: (_) => const ChatbotScreen());
-      //
+
+      case Routes.addProductRoute:
+        return MaterialPageRoute(
+          builder: (_) => BlocProvider(
+            create: (_) => AddProductBloc(
+              addProductUseCase: AddProductUseCase(
+                AddProductRepoImpl(
+                  remoteDataSource: AddProductRemoteDatasourceImpl(),
+                  networkInfo: CheckInternetConnectionImpl(
+                    InternetConnectionChecker(),
+                  ),
+                ),
+              ),
+            ),
+            child: const AddProductScreen(),
+          ),
+        );
       // case Routes.aiFixingRoute:
       //   return MaterialPageRoute(builder: (_) => const AiFixingScreen());
 
       default:
-        return unDefinedRoute();
+        return MaterialPageRoute(builder: (_) => const HomePageLayout());
     }
   }
-
-  static Route<dynamic> unDefinedRoute() {
-    return MaterialPageRoute(
-      builder: (_) => Scaffold(
-        appBar: AppBar(title: Text("No Route Found")),
-        body: Center(child: Text("No Route Found")),
-      ),
-    );
-  }
 }
+
+// static Route<dynamic> unDefinedRoute() {
+//   return MaterialPageRoute(
+//     builder: (_) => Scaffold(
+//       appBar: AppBar(title: Text("No Route Found")),
+//       body: Center(child: Text("No Route Found")),
+//     ),
+//   );
+// }

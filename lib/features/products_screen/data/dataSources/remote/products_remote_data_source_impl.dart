@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:graduation_project/core/api/end_points.dart';
 import 'package:graduation_project/core/cache/shared_pref.dart';
 import 'package:graduation_project/features/home/data/models/product_model.dart';
@@ -9,8 +8,8 @@ import '../../../../../core/api/api_manger.dart';
 import 'products_remote_data_source.dart';
 
 class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
-  // ── Cache Keys (نفس الـ Home cache) ──────────────
   static const String _homeCacheKey = 'cached_trending_products';
+  static const String _sellerCacheKey = 'cached_seller_products';
 
   // ── Get From Home Cache ───────────────────────────
   List<ProductModel> _getFromHomeCache() {
@@ -24,60 +23,109 @@ class ProductsRemoteDataSourceImpl implements ProductsRemoteDataSource {
     }
   }
 
-  // ── Fetch From API ────────────────────────────────
-  Future<List<ProductModel>> _fetchFromApi({int limit = 50}) async {
-    int retries = 0;
-    while (retries < 2) {
-      try {
-        final response = await ApiManager.get(
-          "${EndPoints.trendingRecommend}?limit=$limit",
-        );
-        final List data = response.data['data'] ?? [];
-        return data.map((p) => ProductModel.fromJson(p)).toList();
-      } on DioException catch (e) {
-        retries++;
-        print('Products API Error (retry $retries): ${e.response?.statusCode}');
-        if (retries == 2) break;
-        await Future.delayed(const Duration(seconds: 2));
-      } catch (e) {
-        break;
+  // ── Fetch Seller Products ─────────────────────────
+  Future<List<ProductModel>> _fetchSellerProducts() async {
+    try {
+      final response = await ApiManager.get(EndPoints.sellerProducts);
+
+      List data = [];
+      if (response.data is List) {
+        data = response.data as List;
+      } else if (response.data is Map) {
+        data =
+            (response.data['data'] ?? response.data['products'] ?? []) as List;
       }
+
+      final products = data.map((p) => ProductModel.fromJson(p)).toList();
+      print('✅ Seller products: ${products.length}');
+
+      // ✅ Save to seller cache
+      await SharedPref.saveString(_sellerCacheKey, jsonEncode(data));
+
+      return products;
+    } catch (e) {
+      print('❌ Seller products error: $e');
+
+      // ✅ Fallback: seller cache
+      try {
+        final cached = SharedPref.getString(_sellerCacheKey);
+        if (cached != null && cached.isNotEmpty) {
+          final List data = jsonDecode(cached);
+          return data.map((p) => ProductModel.fromJson(p)).toList();
+        }
+      } catch (_) {}
+
+      return [];
     }
-    return [];
   }
 
   // ── Get All Products ──────────────────────────────
   @override
+  @override
   Future<List<ProductModel>> getAllProducts() async {
-    // ✅ أول حاجة: جرب الـ Home cache
+    // ✅ أول حاجة: جرب تجيب من الـ home cache
     final cached = _getFromHomeCache();
-    if (cached.isNotEmpty) {
-      print('✅ Products from Home cache: ${cached.length}');
-      return cached;
+
+    // ✅ لو مفيش cache — جيب من الـ API مباشرة
+    if (cached.isEmpty) {
+      try {
+        print('🔄 Cache empty — fetching from API...');
+        final response = await ApiManager.get(
+          '${EndPoints.contentRecommend}?itemName=car',
+        );
+
+        List data = [];
+        if (response.data is Map) {
+          data = (response.data['data'] ?? []) as List;
+        } else if (response.data is List) {
+          data = response.data as List;
+        }
+
+        final products = data.map((p) => ProductModel.fromJson(p)).toList();
+
+        // ✅ احفظ في الـ cache
+        if (products.isNotEmpty) {
+          await SharedPref.saveString(_homeCacheKey, jsonEncode(data));
+          print('✅ Fetched and cached: ${products.length}');
+        }
+
+        return products;
+      } catch (e) {
+        print('❌ API fetch error: $e');
+        return [];
+      }
     }
 
-    // ✅ لو مفيش cache، جرب الـ API
-    final products = await _fetchFromApi(limit: 50);
-    if (products.isNotEmpty) return products;
+    // ✅ جيب الـ seller products
+    final sellerProducts = await _fetchSellerProducts();
 
-    // ✅ آخر fallback: ارجع list فاضية بدل error
-    return [];
+    // ✅ دمج
+    final Map<String, ProductModel> all = {};
+    for (var p in [...cached, ...sellerProducts]) {
+      all[p.id] = p;
+    }
+
+    final allProducts = all.values.toList();
+
+    for (var p in allProducts) {
+      print('Product: ${p.name} | Category: "${p.categoryId}"');
+    }
+
+    print('✅ Total products: ${allProducts.length}');
+    return allProducts;
   }
 
   // ── Get Products By Category ──────────────────────
   @override
   Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
-    final all = await getAllProducts();
-    // ✅ لو مفيش category filter، ارجع كل المنتجات
-    if (categoryId.isEmpty) return all;
-    final filtered = all
-        .where(
-          (p) =>
-              p.categoryId.toLowerCase() == categoryId.toLowerCase() ||
-              p.name.toLowerCase().contains(categoryId.toLowerCase()),
-        )
+    final allProducts = await getAllProducts();
+    if (categoryId.isEmpty) return allProducts;
+
+    final filtered = allProducts
+        .where((p) => p.categoryId.toLowerCase() == categoryId.toLowerCase())
         .toList();
-    // ✅ لو مفيش منتجات في الـ category، ارجع كل المنتجات
-    return filtered.isNotEmpty ? filtered : all;
+
+    print('✅ Category "$categoryId": ${filtered.length} products');
+    return filtered.isNotEmpty ? filtered : allProducts;
   }
 }

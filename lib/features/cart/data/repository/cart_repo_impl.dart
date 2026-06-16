@@ -78,8 +78,10 @@ class CartRepoImpl implements CartRepo {
   Future<Either<Failure, void>> clearCart() async {
     try {
       await localDataSource.clearCart();
+      print('✅ Cart cleared successfully');
       return const Right(null);
     } catch (e) {
+      print('❌ Clear cart error: $e');
       return Left(NetworkFailure(message: e.toString()));
     }
   }

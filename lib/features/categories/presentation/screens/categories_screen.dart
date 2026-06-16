@@ -9,11 +9,32 @@ import 'package:graduation_project/features/categories/presentation/bloc/categor
 import 'package:graduation_project/features/categories/presentation/bloc/categories_state.dart';
 
 import '../../../../core/utils/color_maanger.dart';
+import '../../domain/entity/category_entity.dart';
 
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
-  // ── Icon للكل Category ────────────────────────────
+  // ── Category Colors ───────────────────────────────
+  List<Color> get _categoryColors => [
+    const Color(0xFF1a237e),
+    const Color(0xFF3949ab),
+    const Color(0xFF0d47a1),
+    const Color(0xFF1976d2),
+    const Color(0xFF006064),
+    const Color(0xFF00838f),
+    const Color(0xFF1b5e20),
+    const Color(0xFF388e3c),
+    const Color(0xFF4a148c),
+    const Color(0xFF7b1fa2),
+    const Color(0xFFb71c1c),
+    const Color(0xFFe53935),
+    const Color(0xFFe65100),
+    const Color(0xFFf57c00),
+    const Color(0xFF006064),
+    const Color(0xFF0097a7),
+  ];
+
+  // ── Category Icons ────────────────────────────────
   IconData _getCategoryIcon(String icon) {
     switch (icon) {
       case 'engine':
@@ -47,30 +68,77 @@ class CategoriesScreen extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(
-              AppPadding.p16,
-              AppPadding.p48,
-              AppPadding.p16,
               AppPadding.p20,
+              AppPadding.p52,
+              AppPadding.p20,
+              AppPadding.p24,
             ),
             decoration: const BoxDecoration(
-              color: ColorManager.primary,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1a237e), Color(0xFF3949ab)],
+              ),
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(AppRadius.r24),
-                bottomRight: Radius.circular(AppRadius.r24),
+                bottomLeft: Radius.circular(AppRadius.r32),
+                bottomRight: Radius.circular(AppRadius.r32),
               ),
-            ),
-            child: Center(
-              child: Text(
-                "Categories",
-                style: getBoldStyle(
-                  color: ColorManager.white,
-                  fontSize: FontSize.s24,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x441a237e),
+                  blurRadius: 20,
+                  offset: Offset(0, 8),
                 ),
-              ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Top Row ───────────────────────────────
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppPadding.p10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(AppRadius.r12),
+                      ),
+                      child: const Icon(
+                        Icons.grid_view_rounded,
+                        color: Colors.white,
+                        size: AppSize.s24,
+                      ),
+                    ),
+                    const SizedBox(width: AppSize.s12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Categories",
+                          style: getBoldStyle(
+                            color: Colors.white,
+                            fontSize: FontSize.s22,
+                          ),
+                        ),
+                        Text(
+                          "Find your car parts",
+                          style: getRegularStyle(
+                            color: Colors.white.withOpacity(0.75),
+                            fontSize: FontSize.s13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: AppSize.s16),
+
+                // ── Decorative Chips ──────────────────────
+                SingleChildScrollView(scrollDirection: Axis.horizontal),
+              ],
             ),
           ),
-
-          const SizedBox(height: AppSize.s16),
 
           // ── Body ──────────────────────────────────
           Expanded(
@@ -97,62 +165,13 @@ class CategoriesScreen extends StatelessWidget {
                     itemCount: state.categories.length,
                     itemBuilder: (context, index) {
                       final category = state.categories[index];
-                      return GestureDetector(
-                        onTap: () => Navigator.pushNamed(
-                          context,
-                          Routes.productsScreenRoute,
-                          arguments: category,
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: ColorManager.white,
-                            borderRadius: BorderRadius.circular(AppRadius.r16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: ColorManager.grey.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // ── Icon ──────────────
-                              Container(
-                                padding: const EdgeInsets.all(AppPadding.p16),
-                                decoration: BoxDecoration(
-                                  color: ColorManager.primary.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  _getCategoryIcon(category.icon),
-                                  color: ColorManager.primary,
-                                  size: AppSize.s32,
-                                ),
-                              ),
-
-                              const SizedBox(height: AppSize.s12),
-
-                              // ── Name ──────────────
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppPadding.p8,
-                                ),
-                                child: Text(
-                                  category.name,
-                                  style: getMediumStyle(
-                                    color: ColorManager.textPrimary,
-                                    fontSize: FontSize.s14,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      final color =
+                          _categoryColors[index % _categoryColors.length];
+                      return _buildCategoryCard(
+                        context,
+                        category: category,
+                        color: color,
+                        index: index,
                       );
                     },
                   );
@@ -175,7 +194,6 @@ class CategoriesScreen extends StatelessWidget {
                             color: ColorManager.error,
                             fontSize: FontSize.s14,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: AppSize.s16),
                         ElevatedButton(
@@ -200,6 +218,111 @@ class CategoriesScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Category Card ─────────────────────────────────
+  Widget _buildCategoryCard(
+    BuildContext context, {
+    required CategoryEntity category,
+    required Color color,
+    required int index,
+  }) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(
+        context,
+        Routes.productsScreenRoute,
+        arguments: category,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [color, color.withOpacity(0.7)],
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.r20),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // ── Background Pattern ─────────────────
+            Positioned(
+              right: -AppSize.s16,
+              bottom: -AppSize.s16,
+              child: Icon(
+                _getCategoryIcon(category.icon),
+                size: AppSize.s100,
+                color: ColorManager.white.withOpacity(0.1),
+              ),
+            ),
+
+            // ── Content ────────────────────────────
+            Padding(
+              padding: const EdgeInsets.all(AppPadding.p16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // ── Icon Box ──────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(AppPadding.p10),
+                    decoration: BoxDecoration(
+                      color: ColorManager.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(AppRadius.r12),
+                    ),
+                    child: Icon(
+                      _getCategoryIcon(category.icon),
+                      color: ColorManager.white,
+                      size: AppSize.s28,
+                    ),
+                  ),
+
+                  // ── Name & Arrow ──────────────────
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        category.name,
+                        style: getBoldStyle(
+                          color: ColorManager.white,
+                          fontSize: FontSize.s15,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: AppSize.s4),
+                      Row(
+                        children: [
+                          Text(
+                            "Explore",
+                            style: getRegularStyle(
+                              color: ColorManager.white.withOpacity(0.8),
+                              fontSize: FontSize.s12,
+                            ),
+                          ),
+                          const SizedBox(width: AppSize.s4),
+                          Icon(
+                            Icons.arrow_forward,
+                            color: ColorManager.white.withOpacity(0.8),
+                            size: AppSize.s12,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

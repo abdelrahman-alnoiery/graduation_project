@@ -14,19 +14,57 @@ class ProductModel extends ProductEntity {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    // ── Parse image ────────────────────────────────
+    String firstImage = '';
+    try {
+      // ✅ colorimage array
+      final colorimage = json['colorimage'] as List?;
+      if (colorimage != null && colorimage.isNotEmpty) {
+        final images = colorimage[0]['images'] as List?;
+        if (images != null && images.isNotEmpty) {
+          firstImage = images[0].toString();
+        }
+      }
+      // ✅ image field مباشرة
+      if (firstImage.isEmpty && json['image'] != null) {
+        firstImage = json['image'].toString();
+      }
+      // ✅ images array مباشرة
+      if (firstImage.isEmpty && json['images'] != null) {
+        final imgs = json['images'] as List?;
+        if (imgs != null && imgs.isNotEmpty) {
+          firstImage = imgs[0].toString();
+        }
+      }
+    } catch (_) {}
+
+    // ── Parse category ─────────────────────────────
+    String categoryId = '';
+    try {
+      categoryId = json['category']?.toString() ?? '';
+      // ✅ لو category object مش string
+      if (categoryId.isEmpty && json['category'] is Map) {
+        categoryId = (json['category'] as Map)['name']?.toString() ?? '';
+      }
+    } catch (_) {}
+
+    print(
+      'Parsing: ${json['name']} | category raw: "${json['category']}" | parsed: "$categoryId"',
+    );
+
     return ProductModel(
-      id: json['id']?.toString() ?? '',
-      name: json['name'] ?? '',
-      image: json['image'] ?? '',
-      price: (json['price'] as num).toDouble(),
-      oldPrice: (json['old_price'] as num).toDouble(),
-      rating: (json['rating'] as num).toDouble(),
-      reviewCount: json['review_count'] ?? 0,
-      categoryId: json['category_id']?.toString() ?? '',
-      isFavorite: json['is_favorite'] ?? false,
+      id: json['_id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      image: firstImage,
+      price: (json['price'] as num? ?? 0).toDouble(),
+      oldPrice: (json['oldPrice'] as num? ?? json['price'] as num? ?? 0)
+          .toDouble(),
+      rating: (json['averageRating'] as num? ?? 0).toDouble(),
+      reviewCount: (json['reviewCount'] as num? ?? 0).toInt(),
+      categoryId: categoryId,
+      isFavorite: false,
     );
   }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,

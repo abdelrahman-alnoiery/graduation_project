@@ -15,4 +15,5 @@ class Routes {
   static const String cartRoute = "/cart";
   static const String chatbotRoute = "/chatbot";
   static const String aiFixingRoute = "/aiFixing";
+  static const String addProductRoute = '/add-product';
 }

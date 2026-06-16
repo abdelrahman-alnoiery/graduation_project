@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:graduation_project/core/utils/font_manager.dart';
+import 'package:graduation_project/core/utils/styles_manager.dart';
 import 'package:graduation_project/core/utils/values_manager.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../../../../core/utils/color_maanger.dart';
 
@@ -20,7 +21,15 @@ class ChatInput extends StatefulWidget {
 
 class _ChatInputState extends State<ChatInput> {
   final TextEditingController _controller = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() => _hasText = _controller.text.trim().isNotEmpty);
+    });
+  }
 
   @override
   void dispose() {
@@ -28,83 +37,94 @@ class _ChatInputState extends State<ChatInput> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      widget.onSendImage(image.path);
+  void _sendMessage() {
+    final text = _controller.text.trim();
+    if (text.isNotEmpty) {
+      widget.onSendMessage(text);
+      _controller.clear();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppPadding.p12,
-        vertical: AppPadding.p8,
-      ),
-      decoration: BoxDecoration(
-        color: ColorManager.white,
-        boxShadow: [
-          BoxShadow(
-            color: ColorManager.grey.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppPadding.p16,
+        right: AppPadding.p16,
+        bottom: MediaQuery.of(context).padding.bottom + AppPadding.p12,
+        top: AppPadding.p8,
       ),
       child: Row(
         children: [
-          // ── Mic Icon ───────────────────────
-          const Icon(Icons.mic_outlined, color: ColorManager.grey),
-
-          const SizedBox(width: AppSize.s8),
-
-          // ── Text Field ─────────────────────
+          // ── Text Field ────────────────────────
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppPadding.p12),
               decoration: BoxDecoration(
-                color: ColorManager.lightGrey,
+                color: const Color(0xFFF0F2F8),
                 borderRadius: BorderRadius.circular(AppRadius.r50),
-              ),
-              child: TextField(
-                controller: _controller,
-                decoration: const InputDecoration(
-                  hintText: "Ask Me...",
-                  hintStyle: TextStyle(color: ColorManager.grey),
-                  border: InputBorder.none,
+                border: Border.all(
+                  color: const Color(0xFF1a237e).withOpacity(0.1),
                 ),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: AppSize.s16),
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      maxLines: null,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        hintText: "Ask CarGo AI...",
+                        hintStyle: getRegularStyle(
+                          color: ColorManager.grey,
+                          fontSize: FontSize.s14,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: AppPadding.p12,
+                        ),
+                      ),
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
+                  ),
+                  const SizedBox(width: AppSize.s8),
+                ],
               ),
             ),
           ),
 
           const SizedBox(width: AppSize.s8),
 
-          // ── Send / Image Button ────────────
+          // ── Send Button ───────────────────────
           GestureDetector(
-            onTap: () {
-              if (_controller.text.isNotEmpty) {
-                widget.onSendMessage(_controller.text.trim());
-                _controller.clear();
-              } else {
-                _pickImage();
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.all(AppPadding.p8),
-              decoration: const BoxDecoration(
-                color: ColorManager.primary,
+            onTap: _hasText ? _sendMessage : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: AppSize.s48,
+              height: AppSize.s48,
+              decoration: BoxDecoration(
+                gradient: _hasText
+                    ? const LinearGradient(
+                        colors: [Color(0xFF1a237e), Color(0xFF3949ab)],
+                      )
+                    : null,
+                color: _hasText ? null : Colors.grey.withOpacity(0.2),
                 shape: BoxShape.circle,
+                boxShadow: _hasText
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFF1a237e).withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
               ),
-              child: ValueListenableBuilder(
-                valueListenable: _controller,
-                builder: (context, value, _) {
-                  return Icon(
-                    value.text.isNotEmpty ? Icons.send : Icons.add,
-                    color: ColorManager.white,
-                    size: AppSize.s20,
-                  );
-                },
+              child: Icon(
+                Icons.send_rounded,
+                color: _hasText ? Colors.white : Colors.grey,
+                size: AppSize.s20,
               ),
             ),
           ),

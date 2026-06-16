@@ -1,10 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:graduation_project/core/utils/font_manager.dart';
 import 'package:graduation_project/core/utils/styles_manager.dart';
 import 'package:graduation_project/core/utils/values_manager.dart';
+import 'package:graduation_project/features/chat_bot/domain/entity/message_entity.dart';
 
 import '../../../../../core/utils/color_maanger.dart';
-import '../../../domain/entity/message_entity.dart';
 
 class MessageBubble extends StatelessWidget {
   final MessageEntity message;
@@ -16,87 +18,175 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppPadding.p4),
+      padding: const EdgeInsets.only(bottom: AppPadding.p12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisAlignment: isUser
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          if (!isUser) _buildAvatar(),
-          const SizedBox(width: AppSize.s8),
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppPadding.p12,
-                vertical: AppPadding.p8,
-              ),
+          // ── Bot Avatar ────────────────────────
+          if (!isUser) ...[
+            Container(
+              width: AppSize.s32,
+              height: AppSize.s32,
               decoration: BoxDecoration(
-                color: isUser ? ColorManager.primary : ColorManager.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(AppRadius.r16),
-                  topRight: const Radius.circular(AppRadius.r16),
-                  bottomLeft: isUser
-                      ? const Radius.circular(AppRadius.r16)
-                      : Radius.zero,
-                  bottomRight: isUser
-                      ? Radius.zero
-                      : const Radius.circular(AppRadius.r16),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1a237e), Color(0xFF3949ab)],
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: ColorManager.grey.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                shape: BoxShape.circle,
               ),
-              child: message.type == MessageType.image
-                  ? _buildImageMessage()
-                  : _buildTextMessage(),
+              child: const Center(
+                child: Icon(
+                  Icons.smart_toy_rounded,
+                  color: Colors.white,
+                  size: AppSize.s18,
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSize.s8),
+          ],
+
+          // ── Bubble ────────────────────────────
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: message.type == MessageType.image
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(
+                          horizontal: AppPadding.p16,
+                          vertical: AppPadding.p12,
+                        ),
+                  decoration: BoxDecoration(
+                    gradient: isUser
+                        ? const LinearGradient(
+                            colors: [Color(0xFF1a237e), Color(0xFF3949ab)],
+                          )
+                        : null,
+                    color: isUser ? null : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(AppRadius.r16),
+                      topRight: const Radius.circular(AppRadius.r16),
+                      bottomLeft: Radius.circular(
+                        isUser ? AppRadius.r16 : AppRadius.r4,
+                      ),
+                      bottomRight: Radius.circular(
+                        isUser ? AppRadius.r4 : AppRadius.r16,
+                      ),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isUser
+                            ? const Color(0xFF1a237e).withOpacity(0.2)
+                            : Colors.grey.withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: message.type == MessageType.image
+                      ? _buildImageMessage()
+                      : _buildTextMessage(),
+                ),
+
+                // ── Time ──────────────────────
+                const SizedBox(height: AppSize.s4),
+                Text(
+                  _formatTime(message.createdAt),
+                  style: getRegularStyle(
+                    color: ColorManager.textSecondary,
+                    fontSize: FontSize.s10,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: AppSize.s8),
-          if (isUser) _buildAvatar(),
+
+          // ── User Avatar ───────────────────────
+          if (isUser) ...[
+            const SizedBox(width: AppSize.s8),
+            Container(
+              width: AppSize.s32,
+              height: AppSize.s32,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1a237e).withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF1a237e).withOpacity(0.3),
+                ),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.person_rounded,
+                  color: Color(0xFF1a237e),
+                  size: AppSize.s18,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
+  // ── Text Message ──────────────────────────────────
   Widget _buildTextMessage() {
     return Text(
       message.content,
       style: getRegularStyle(
-        color: isUser ? ColorManager.white : ColorManager.textPrimary,
+        color: isUser ? Colors.white : ColorManager.textPrimary,
         fontSize: FontSize.s14,
       ),
     );
   }
 
+  // ── Image Message ─────────────────────────────────
   Widget _buildImageMessage() {
+    final imageUrl = message.imageUrl ?? '';
     return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.r8),
-      child: Image.network(
-        message.imageUrl ?? '',
-        width: AppSize.s200,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const Icon(
+      borderRadius: BorderRadius.circular(AppRadius.r16),
+      child: imageUrl.startsWith('http')
+          ? Image.network(
+              imageUrl,
+              width: AppSize.s200,
+              height: AppSize.s150,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _buildImageError(),
+            )
+          : Image.file(
+              File(imageUrl),
+              width: AppSize.s200,
+              height: AppSize.s150,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _buildImageError(),
+            ),
+    );
+  }
+
+  // ── Image Error ───────────────────────────────────
+  Widget _buildImageError() {
+    return Container(
+      width: AppSize.s200,
+      height: AppSize.s150,
+      color: ColorManager.lightGrey,
+      child: const Center(
+        child: Icon(
           Icons.image_not_supported_outlined,
           color: ColorManager.grey,
+          size: AppSize.s32,
         ),
       ),
     );
   }
 
-  Widget _buildAvatar() {
-    return CircleAvatar(
-      radius: AppSize.s16,
-      backgroundColor: isUser ? ColorManager.primary : ColorManager.lightGrey,
-      child: Icon(
-        isUser ? Icons.person : Icons.smart_toy_outlined,
-        color: isUser ? ColorManager.white : ColorManager.primary,
-        size: AppSize.s16,
-      ),
-    );
+  // ── Format Time ───────────────────────────────────
+  String _formatTime(DateTime time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 }

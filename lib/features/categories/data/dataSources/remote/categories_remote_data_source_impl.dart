@@ -9,18 +9,38 @@ class CategoriesRemoteDataSourceImpl implements CategoriesRemoteDataSource {
   Future<List<CategoryModel>> getCategories() async {
     await Future.delayed(const Duration(milliseconds: 300));
     return [
-      CategoryModel(id: '1', name: 'Engine Parts', image: '', icon: 'engine'),
-      CategoryModel(id: '2', name: 'Body Parts', image: '', icon: 'body'),
-      CategoryModel(id: '3', name: 'Electrical', image: '', icon: 'electrical'),
-      CategoryModel(id: '4', name: 'Brakes', image: '', icon: 'brakes'),
-      CategoryModel(id: '5', name: 'Suspension', image: '', icon: 'suspension'),
-      CategoryModel(id: '6', name: 'Tires & Wheels', image: '', icon: 'tires'),
-      CategoryModel(id: '7', name: 'Interior', image: '', icon: 'interior'),
+      CategoryModel(id: 'Car Door', name: 'Car Door', image: '', icon: 'body'),
       CategoryModel(
-        id: '8',
+        id: 'Auto Lighting Systems',
+        name: 'Lighting',
+        image: '',
+        icon: 'electrical',
+      ),
+      CategoryModel(id: 'wheels', name: 'Wheels', image: '', icon: 'tires'),
+      CategoryModel(
+        id: 'car accessories',
         name: 'Accessories',
         image: '',
         icon: 'accessories',
+      ),
+      CategoryModel(
+        id: 'Engine Parts',
+        name: 'Engine Parts',
+        image: '',
+        icon: 'engine',
+      ),
+      CategoryModel(id: 'Brakes', name: 'Brakes', image: '', icon: 'brakes'),
+      CategoryModel(
+        id: 'Suspension',
+        name: 'Suspension',
+        image: '',
+        icon: 'suspension',
+      ),
+      CategoryModel(
+        id: 'Interior',
+        name: 'Interior',
+        image: '',
+        icon: 'interior',
       ),
     ];
   }

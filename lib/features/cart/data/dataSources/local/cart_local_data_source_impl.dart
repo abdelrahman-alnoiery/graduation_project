@@ -64,6 +64,8 @@ class CartLocalDataSourceImpl implements CartLocalDataSource {
   // ── Clear Cart ────────────────────────────────────
   @override
   Future<void> clearCart() async {
-    await HiveHelper.clearBox(HiveConstants.cartBox);
+    final box = HiveHelper.getBox<CartItemModel>(HiveConstants.cartBox);
+    await box.clear();
+    print('✅ Cart cleared: ${box.length} items remaining');
   }
 }
