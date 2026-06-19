@@ -11,6 +11,7 @@ import 'package:graduation_project/features/favourite/presentation/bloc/favourit
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_state.dart';
 
 import '../../../../../core/utils/color_maanger.dart';
+import '../../../../home/domain/entity/product_entity.dart';
 
 class FavouriteScreen extends StatefulWidget {
   const FavouriteScreen({super.key});
@@ -334,8 +335,21 @@ class _FavouriteScreenState extends State<FavouriteScreen>
   // ── Fav Card ──────────────────────────────────────
   Widget _buildFavCard(BuildContext context, item) {
     return GestureDetector(
-      onTap: () =>
-          Navigator.pushNamed(context, Routes.productDetails, arguments: item),
+      onTap: () => Navigator.pushNamed(
+        context,
+        Routes.productDetails,
+        arguments: ProductEntity(
+          id: item.id,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          oldPrice: item.price,
+          rating: 0,
+          reviewCount: 0,
+          categoryId: '',
+          isFavorite: true,
+        ),
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
