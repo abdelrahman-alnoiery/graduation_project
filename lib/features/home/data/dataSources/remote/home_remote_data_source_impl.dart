@@ -1,8 +1,5 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:graduation_project/core/api/end_points.dart';
-import 'package:graduation_project/core/cache/shared_pref.dart';
 import 'package:graduation_project/features/home/data/models/brand_model.dart';
 import 'package:graduation_project/features/home/data/models/product_model.dart';
 
@@ -10,85 +7,19 @@ import '../../../../../core/api/api_manger.dart';
 import 'home_remote_data_source.dart';
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
-  // ── Cache Keys ────────────────────────────────────
-  static const String _cacheKey = 'cached_trending_products';
-  static const String _cacheTimeKey = 'cached_trending_time';
-  static const int _cacheDurationMinutes = 30;
-
-  // ── Helper: Check Cache Valid ─────────────────────
-  Object _isCacheValid() {
-    final timeStr = SharedPref.getString(_cacheTimeKey);
-    if (timeStr == null) return false;
-    final cacheTime = DateTime.tryParse(timeStr);
-    if (cacheTime == null) return false;
-    return DateTime.now().difference(cacheTime).inMinutes;
-    _cacheDurationMinutes;
-  }
-
-  // ── Helper: Get From Cache ────────────────────────
-  List<ProductModel>? _getFromCache() {
-    try {
-      final cached = SharedPref.getString(_cacheKey);
-      if (cached == null || cached.isEmpty) return null;
-      final List data = jsonDecode(cached);
-      return data.map((p) => ProductModel.fromJson(p)).toList();
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // ── Helper: Save To Cache ─────────────────────────
-  Future<void> _saveToCache(List<ProductModel> products) async {
-    try {
-      final data = products
-          .map(
-            (p) => {
-              '_id': p.id,
-              'name': p.name,
-              'image': p.image,
-              'price': p.price,
-              'averageRating': p.rating,
-              'reviewCount': p.reviewCount,
-              'category': p.categoryId,
-            },
-          )
-          .toList();
-      await SharedPref.setString(_cacheKey, jsonEncode(data));
-      await SharedPref.setString(
-        _cacheTimeKey,
-        DateTime.now().toIso8601String(),
-      );
-      print('✅ Products cached: ${products.length}');
-    } catch (e) {
-      print('Cache save error: $e');
-    }
+  List _extractList(dynamic responseData) {
+    if (responseData is List) return responseData;
+    if (responseData is Map) return responseData['data'] as List? ?? [];
+    return [];
   }
 
   // ── Helper: Fetch Trending ────────────────────────
   Future<List<ProductModel>> _fetchTrending({int limit = 20}) async {
-    // ✅ Check cache
-    bool _isCacheValid() {
-      try {
-        final timeStr = SharedPref.getString(_cacheTimeKey);
-        if (timeStr == null || timeStr.isEmpty) return false;
-        final cacheTime = DateTime.tryParse(timeStr);
-        if (cacheTime == null) return false;
-        final diff = DateTime.now().difference(cacheTime).inMinutes;
-        return diff < _cacheDurationMinutes;
-      } catch (e) {
-        return false;
-      }
-    }
-
-    // ✅ جرب content recommend
     try {
-      final response = await ApiManager.get(
-        "${EndPoints.contentRecommend}?itemName=car",
-      );
-      final List data = response.data['data'] ?? [];
+      final response = await ApiManager.get("${EndPoints.contentRecommend}?itemName=car");
+      final data = _extractList(response.data);
       final products = data.map((p) => ProductModel.fromJson(p)).toList();
       if (products.isNotEmpty) {
-        await _saveToCache(products);
         print('✅ From content recommend: ${products.length}');
         return products;
       }
@@ -96,23 +27,17 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       print('Content recommend failed: $e');
     }
 
-    // ✅ جرب trending
     try {
       final response = await ApiManager.get(
-        "${EndPoints.trendingRecommend}?limit=$limit",
+        "${EndPoints.contentRecommend}?itemName=car",
       );
-      final List data = response.data['data'] ?? [];
-      final products = data.map((p) => ProductModel.fromJson(p)).toList();
-      if (products.isNotEmpty) {
-        await _saveToCache(products);
-        return products;
-      }
+      final data = _extractList(response.data);
+      return data.map((p) => ProductModel.fromJson(p)).toList();
     } catch (e) {
       print('Trending failed: $e');
     }
 
-    // ✅ آخر fallback: الـ cache القديم
-    return _getFromCache() ?? [];
+    return [];
   }
 
   // ── Get Products ──────────────────────────────────
@@ -124,10 +49,24 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   // ── Get Best Price ────────────────────────────────
   @override
   Future<List<ProductModel>> getBestPriceProducts() async {
-    final products = await _fetchTrending(limit: 20);
-    final sorted = List<ProductModel>.from(products)
-      ..sort((a, b) => a.price.compareTo(b.price));
-    return sorted.take(10).toList();
+    try {
+      final response = await ApiManager.get(EndPoints.products);
+      final data = _extractList(response.data);
+      final products = data.map((p) => ProductModel.fromJson(p)).toList();
+      if (products.isNotEmpty) return products;
+    } catch (e) {
+      print('Best price fetch failed: $e');
+    }
+
+    try {
+      final response = await ApiManager.get(EndPoints.trendingRecommend);
+      final data = _extractList(response.data);
+      return data.map((p) => ProductModel.fromJson(p)).toList();
+    } catch (e) {
+      print('Best price fallback failed: $e');
+    }
+
+    return [];
   }
 
   // ── Get Brands ────────────────────────────────────
@@ -165,15 +104,11 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       final response = await ApiManager.get(
         "${EndPoints.contentRecommend}?itemName=$query",
       );
-      final List data = response.data['data'] ?? [];
+      final data = _extractList(response.data);
       return data.map((p) => ProductModel.fromJson(p)).toList();
     } on DioException catch (e) {
       print('Search Error: ${e.response?.data}');
-      // ✅ Fallback: فلتر من الـ cache
-      final cached = _getFromCache() ?? [];
-      return cached
-          .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      return [];
     } catch (e) {
       return [];
     }
