@@ -46,7 +46,7 @@ class AddProductRemoteDatasourceImpl implements AddProductRemoteDatasource {
     });
 
     final response = await dio.post(EndPoints.products, data: formData);
-
+    print(response);
     return AddProductResponseModel.fromJson(
       response.data as Map<String, dynamic>,
     );
