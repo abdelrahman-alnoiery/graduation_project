@@ -42,6 +42,11 @@ class EndPoints {
   // ── Car Damage Detection ──────────────────────────
   static const String detectDamage = "/detect-damage";
 
+  // ── Chatbot ───────────────────────────────────────
+  static const String chatbotBaseUrl =
+      "https://chatbotcar.abdoelhadray.workers.dev";
+  static const String chatbotSend = "/"; // POST على الـ base URL مباشرة
+
   static const String otp = "";
   static const String verify = "";
   static const String categories = "";

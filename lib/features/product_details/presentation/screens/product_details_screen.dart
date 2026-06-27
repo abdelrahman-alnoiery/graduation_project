@@ -10,6 +10,7 @@ import 'package:graduation_project/features/favourite/presentation/bloc/favourit
 import 'package:graduation_project/features/favourite/presentation/bloc/favourite_state.dart';
 
 import '../../../../core/utils/color_maanger.dart';
+import '../../../car_try_on/presentation/ui/car_try_on_screen.dart';
 import '../../../favourite/domain/entity/favourite_entity.dart';
 import '../../../home/domain/entity/product_entity.dart';
 
@@ -380,95 +381,144 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
+              // ✅ غيرنا Row لـ Column عشان نضيف زرار تاني
               children: [
-                // ── Favourite Button ─────────────
-                BlocBuilder<FavouriteBloc, FavouriteState>(
-                  builder: (context, state) {
-                    final isFav =
-                        state is FavouriteSuccessState &&
-                        state.favourites.any((f) => f.id == product.id);
-                    return Container(
-                      margin: const EdgeInsets.only(right: AppMargin.m12),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: isFav
-                              ? ColorManager.error
-                              : ColorManager.lightGrey,
-                        ),
-                        borderRadius: BorderRadius.circular(AppRadius.r12),
-                      ),
-                      child: IconButton(
-                        onPressed: () {
-                          if (isFav) {
-                            context.read<FavouriteBloc>().add(
-                              RemoveFavouriteEvent(product.id),
-                            );
-                          } else {
-                            context.read<FavouriteBloc>().add(
-                              AddFavouriteEvent(
-                                FavouriteEntity(
-                                  id: product.id,
-                                  name: product.name,
-                                  image: product.image,
-                                  price: product.price,
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        icon: Icon(
-                          isFav ? Icons.favorite : Icons.favorite_border,
-                          color: isFav ? ColorManager.error : ColorManager.grey,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                // ── Add to Cart Button ────────────
-                Expanded(
+                // ── Try on Your Car Button ────────────────
+                SizedBox(
+                  width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      context.read<CartBloc>().add(
-                        AddCartItemEvent(
-                          productId: product.id,
-                          productName: product.name,
-                          productImage: product.image,
-                          price: product.price,
-                          quantity: _quantity,
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CarTryOnScreen(
+                            productId: product.id,
+                            productName: product.name,
+                            productImage: product.image,
+                          ),
                         ),
                       );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("${product.name} added to cart!"),
-                          backgroundColor: ColorManager.success,
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                      Navigator.pop(context);
                     },
                     icon: const Icon(
-                      Icons.shopping_cart_outlined,
-                      color: ColorManager.white,
+                      Icons.directions_car_rounded,
+                      color: Colors.white,
                     ),
                     label: Text(
-                      "Add to Cart",
+                      "Try on Your Car 🚗",
                       style: getBoldStyle(
-                        color: ColorManager.white,
-                        fontSize: FontSize.s16,
+                        color: Colors.white,
+                        fontSize: FontSize.s15,
                       ),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorManager.primary,
+                      backgroundColor: const Color(0xFF1a237e),
                       padding: const EdgeInsets.symmetric(
-                        vertical: AppPadding.p16,
+                        vertical: AppPadding.p14,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadius.r12),
                       ),
                     ),
                   ),
+                ),
+
+                const SizedBox(height: AppSize.s8),
+
+                // ── Row: Favourite + Add to Cart ──────────
+                Row(
+                  children: [
+                    // ── Favourite Button ─────────────────
+                    BlocBuilder<FavouriteBloc, FavouriteState>(
+                      builder: (context, state) {
+                        final isFav =
+                            state is FavouriteSuccessState &&
+                            state.favourites.any((f) => f.id == product.id);
+                        return Container(
+                          margin: const EdgeInsets.only(right: AppMargin.m12),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: isFav
+                                  ? ColorManager.error
+                                  : ColorManager.lightGrey,
+                            ),
+                            borderRadius: BorderRadius.circular(AppRadius.r12),
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              if (isFav) {
+                                context.read<FavouriteBloc>().add(
+                                  RemoveFavouriteEvent(product.id),
+                                );
+                              } else {
+                                context.read<FavouriteBloc>().add(
+                                  AddFavouriteEvent(
+                                    FavouriteEntity(
+                                      id: product.id,
+                                      name: product.name,
+                                      image: product.image,
+                                      price: product.price,
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            icon: Icon(
+                              isFav ? Icons.favorite : Icons.favorite_border,
+                              color: isFav
+                                  ? ColorManager.error
+                                  : ColorManager.grey,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // ── Add to Cart Button ────────────────
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          context.read<CartBloc>().add(
+                            AddCartItemEvent(
+                              productId: product.id,
+                              productName: product.name,
+                              productImage: product.image,
+                              price: product.price,
+                              quantity: _quantity,
+                            ),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("${product.name} added to cart!"),
+                              backgroundColor: ColorManager.success,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(
+                          Icons.shopping_cart_outlined,
+                          color: ColorManager.white,
+                        ),
+                        label: Text(
+                          "Add to Cart",
+                          style: getBoldStyle(
+                            color: ColorManager.white,
+                            fontSize: FontSize.s16,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorManager.primary,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: AppPadding.p16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.r12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

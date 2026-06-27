@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:graduation_project/core/utils/font_manager.dart';
 import 'package:graduation_project/core/utils/styles_manager.dart';
 import 'package:graduation_project/core/utils/values_manager.dart';
@@ -135,11 +136,18 @@ class MessageBubble extends StatelessWidget {
 
   // ── Text Message ──────────────────────────────────
   Widget _buildTextMessage() {
-    return Text(
-      message.content,
-      style: getRegularStyle(
-        color: isUser ? Colors.white : ColorManager.textPrimary,
-        fontSize: FontSize.s14,
+    return MarkdownBody(
+      data: message.content,
+      selectable: true,
+      styleSheet: MarkdownStyleSheet(
+        p: TextStyle(
+          color: isUser ? Colors.white : ColorManager.textPrimary,
+          fontSize: FontSize.s14,
+        ),
+        strong: TextStyle(
+          color: isUser ? Colors.white : ColorManager.textPrimary,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
