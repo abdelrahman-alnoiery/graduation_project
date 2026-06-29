@@ -16,7 +16,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   // ── Helper: Fetch Trending ────────────────────────
   Future<List<ProductModel>> _fetchTrending({int limit = 20}) async {
     try {
-      final response = await ApiManager.get("${EndPoints.contentRecommend}?itemName=car");
+      final response = await ApiManager.get("${EndPoints.sellerProductSearch}?Name=car");
       final data = _extractList(response.data);
       final products = data.map((p) => ProductModel.fromJson(p)).toList();
       if (products.isNotEmpty) {
