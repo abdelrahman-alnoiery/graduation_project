@@ -47,8 +47,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _headerFade = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _headerController, curve: Curves.easeOut),
     );
-    _headerSlide =
-        Tween<Offset>(begin: const Offset(0, -0.2), end: Offset.zero).animate(
+    _headerSlide = Tween<Offset>(begin: const Offset(0, -0.2), end: Offset.zero)
+        .animate(
           CurvedAnimation(parent: _headerController, curve: Curves.easeOut),
         );
     _contentFade = Tween<double>(begin: 0, end: 1).animate(
@@ -121,9 +121,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 if (state is HomeDataErrorState) {
                   return HomeErrorView(
                     message: state.failure.message,
-                    onRetry: () => context.read<HomeBloc>().add(
-                      const GetHomeDataEvent(),
-                    ),
+                    onRetry: () =>
+                        context.read<HomeBloc>().add(const GetHomeDataEvent()),
                   );
                 }
 
@@ -170,7 +169,7 @@ class _HomeContent extends StatelessWidget {
             const SizedBox(height: AppSize.s24),
 
             const HomeSectionHeader(
-              title: "Trending Now 🔥",
+              title: "Trending Now ",
               icon: Icons.trending_up_rounded,
             ),
             const SizedBox(height: AppSize.s12),
@@ -179,7 +178,7 @@ class _HomeContent extends StatelessWidget {
             const SizedBox(height: AppSize.s24),
 
             const HomeSectionHeader(
-              title: "Best Price 💰",
+              title: "Best Price ",
               icon: Icons.local_offer_rounded,
             ),
             const SizedBox(height: AppSize.s12),

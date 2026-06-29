@@ -6,6 +6,7 @@ abstract class CarTryOnRemoteDatasource {
   Future<CarTryOnModel> tryOnCar({
     required String productId,
     required File carImage,
-    String? productImageUrl,
+    required String productImageUrl,
+    required String productName,
   });
 }

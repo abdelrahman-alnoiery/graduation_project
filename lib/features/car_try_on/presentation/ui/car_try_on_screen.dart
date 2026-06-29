@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 import '../../data/datasources/car_try_on_remote_datasource_impl.dart';
 import '../../data/repository/car_try_on_repo_impl.dart';
+import '../../domain/entity/car_try_on_entity.dart';
 import '../../domain/usecases/car_try_on_usecase.dart';
 import '../bloc/car_try_on_bloc.dart';
 import '../bloc/car_try_on_event.dart';
@@ -19,13 +21,13 @@ import '../bloc/car_try_on_state.dart';
 class CarTryOnScreen extends StatefulWidget {
   final String productId;
   final String productName;
-  final String productImage;
+  final String productImageUrl;
 
   const CarTryOnScreen({
     super.key,
     required this.productId,
     required this.productName,
-    required this.productImage,
+    required this.productImageUrl,
   });
 
   @override
@@ -41,12 +43,13 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
       final XFile? image = await _picker.pickImage(
         source: source,
         imageQuality: 80,
+        maxWidth: 1920,
+        maxHeight: 1080,
       );
       if (image != null && mounted) {
         setState(() {
           _selectedImage = File(image.path);
         });
-        // ✅ reset الـ BLoC لو كان فيه نتيجة قديمة
         context.read<CarTryOnBloc>().add(const ResetCarTryOnEvent());
       }
     } catch (e) {
@@ -204,38 +207,24 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
             backgroundColor: const Color(0xFFF0F2F8),
             body: Column(
               children: [
-                // ── Header ──────────────────────────
                 _buildHeader(),
-
-                // ── Content ─────────────────────────
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.all(AppPadding.p16),
                     child: Column(
                       children: [
-                        // ── Product Preview ───────────
                         _buildProductPreview(),
                         const SizedBox(height: AppSize.s16),
-
-                        // ── Car Image Upload ──────────
                         _buildImageUploadBox(),
                         const SizedBox(height: AppSize.s16),
-
-                        // ── Loading ───────────────────
                         if (isLoading) _buildLoadingCard(),
-
-                        // ── Result ────────────────────
-                        if (result != null)
-                          _buildResultCard(result.resultImageUrl),
-
+                        if (result != null) _buildResultCard(result),
                         const SizedBox(height: AppSize.s24),
                       ],
                     ),
                   ),
                 ),
-
-                // ── Generate Button ──────────────────
                 if (_selectedImage != null && !isLoading)
                   _buildGenerateButton(context),
               ],
@@ -246,7 +235,6 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
     );
   }
 
-  // ── Header ─────────────────────────────────────────
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
@@ -298,7 +286,7 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Try on Your Car 🚗',
+                    'Try on Your Car ',
                     style: getBoldStyle(
                       color: Colors.white,
                       fontSize: FontSize.s20,
@@ -322,7 +310,6 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
     );
   }
 
-  // ── Product Preview ────────────────────────────────
   Widget _buildProductPreview() {
     return Container(
       width: double.infinity,
@@ -343,7 +330,7 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.r12),
             child: Image.network(
-              widget.productImage,
+              widget.productImageUrl,
               width: 72,
               height: 72,
               fit: BoxFit.cover,
@@ -390,7 +377,7 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
               borderRadius: BorderRadius.circular(AppRadius.r50),
             ),
             child: Text(
-              'AI Ready ✨',
+              'AI Ready ',
               style: getMediumStyle(
                 color: const Color(0xFF1a237e),
                 fontSize: FontSize.s11,
@@ -402,13 +389,12 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
     );
   }
 
-  // ── Image Upload Box ───────────────────────────────
   Widget _buildImageUploadBox() {
     return GestureDetector(
       onTap: _showImageSourceSheet,
       child: Container(
         width: double.infinity,
-        constraints: const BoxConstraints(minHeight: 200),
+        constraints: const BoxConstraints(minHeight: 200, maxHeight: 300),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppRadius.r20),
@@ -432,7 +418,9 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
                     Image.file(
                       _selectedImage!,
                       width: double.infinity,
+                      height: double.infinity,
                       fit: BoxFit.cover,
+                      cacheWidth: 800,
                     ),
                     Positioned(
                       top: 10,
@@ -496,7 +484,6 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
     );
   }
 
-  // ── Loading Card ───────────────────────────────────
   Widget _buildLoadingCard() {
     return Container(
       width: double.infinity,
@@ -518,7 +505,7 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
           const CircularProgressIndicator(color: Color(0xFF1a237e)),
           const SizedBox(height: AppSize.s16),
           Text(
-            'AI is working its magic... ✨',
+            'AI is working its magic... 🪄',
             style: getMediumStyle(
               color: const Color(0xFF1a237e),
               fontSize: FontSize.s15,
@@ -534,8 +521,8 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
     );
   }
 
-  // ── Result Card ────────────────────────────────────
-  Widget _buildResultCard(String imageUrl) {
+  // ✅ تعديل استقبال الكائن ليكون الـ Entity بدلاً من الـ Model لمنع خطأ الـ Type Cast
+  Widget _buildResultCard(CarTryOnEntity result) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: AppMargin.m16),
@@ -610,35 +597,30 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
               bottomLeft: Radius.circular(AppRadius.r20),
               bottomRight: Radius.circular(AppRadius.r20),
             ),
-            child: Image.network(
-              imageUrl,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              loadingBuilder: (ctx, child, progress) {
-                if (progress == null) return child;
-                return Container(
-                  height: 250,
-                  color: const Color(0xFFF0F2F8),
-                  child: const Center(
-                    child: CircularProgressIndicator(color: Color(0xFF1a237e)),
+            // ✅ فحص ذكي لعرض النتيجة سواء كانت راجعة كـ Bytes أو رابط Url مباشر
+            child: result.resultImageBytes != null
+                ? Image.memory(
+                    Uint8List.fromList(result.resultImageBytes!),
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    cacheWidth: 1000,
+                  )
+                : Image.network(
+                    result.resultImageUrl,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 200,
+                      color: const Color(0xFFF0F2F8),
+                      child: const Icon(Icons.broken_image, color: Colors.grey),
+                    ),
                   ),
-                );
-              },
-              errorBuilder: (_, __, ___) => Container(
-                height: 200,
-                color: const Color(0xFFF0F2F8),
-                child: const Center(
-                  child: Icon(Icons.broken_image, color: Colors.grey, size: 40),
-                ),
-              ),
-            ),
           ),
         ],
       ),
     );
   }
 
-  // ── Generate Button ────────────────────────────────
   Widget _buildGenerateButton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppPadding.p16),
@@ -657,17 +639,23 @@ class _CarTryOnScreenState extends State<CarTryOnScreen> {
         child: ElevatedButton.icon(
           onPressed: () {
             if (_selectedImage == null) return;
+
+            // إخفاء الـ Keyboard
+            FocusScope.of(context).unfocus();
+
+            // 🔥 تم الإصلاح: تمرير المتغيرات كاملة بطريقة صحيحة للـ Bloc لمنع الـ null
             context.read<CarTryOnBloc>().add(
               TryOnCarEvent(
                 productId: widget.productId,
+                productName: widget.productName,
+                productImageUrl: widget.productImageUrl,
                 carImage: _selectedImage!,
-                productImageUrl: widget.productImage, // ✅ أضف ده
               ),
             );
           },
           icon: const Icon(Icons.auto_awesome_rounded, color: Colors.white),
           label: Text(
-            'Generate AI Try-On ✨',
+            'Generate AI Try-On ',
             style: getBoldStyle(color: Colors.white, fontSize: FontSize.s16),
           ),
           style: ElevatedButton.styleFrom(

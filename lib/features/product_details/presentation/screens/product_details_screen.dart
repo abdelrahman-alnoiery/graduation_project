@@ -385,6 +385,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               // ✅ غيرنا Row لـ Column عشان نضيف زرار تاني
               children: [
                 // ── Try on Your Car Button ────────────────
+                // ✅ الكود المُعدل والمضمون لتمرير البيانات بالكامل:
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -394,8 +395,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         MaterialPageRoute(
                           builder: (_) => CarTryOnScreen(
                             productId: product.id,
-                            productName: product.name,
-                            productImage: product.image,
+                            productName: product
+                                .name, // تأكد أن هذا الاسم مطابق للـ constructor داخل CarTryOnScreen
+                            productImageUrl: product
+                                .image, // 💡 تم تعديل الاسم هنا ليكون productImageUrl ليطابق الـ UseCase والـ Bloc
                           ),
                         ),
                       );
@@ -405,7 +408,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       color: Colors.white,
                     ),
                     label: Text(
-                      "Try on Your Car 🚗",
+                      "Try on Your Car ",
                       style: getBoldStyle(
                         color: Colors.white,
                         fontSize: FontSize.s15,
@@ -422,7 +425,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: AppSize.s8),
 
                 // ── Row: Favourite + Add to Cart ──────────

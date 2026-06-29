@@ -142,7 +142,7 @@ class _SplashScreenState extends State<SplashScreen>
     final isLoggedIn = SharedPref.getBool('is_logged_in') ?? false;
     Navigator.pushReplacementNamed(
       context,
-      isLoggedIn ? Routes.homePageLayoutRoute : Routes.signInRoute,
+      isLoggedIn ? Routes.homePageLayoutRoute : Routes.onboarding1Route,
     );
   }
 

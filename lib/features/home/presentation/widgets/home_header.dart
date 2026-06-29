@@ -94,7 +94,7 @@ class HomeHeader extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            "Find the best car parts 🚗",
+                            "Find the best car parts ",
                             style: getRegularStyle(
                               color: Colors.white.withOpacity(0.7),
                               fontSize: FontSize.s13,

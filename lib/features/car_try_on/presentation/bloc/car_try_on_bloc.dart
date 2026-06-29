@@ -8,30 +8,43 @@ class CarTryOnBloc extends Bloc<CarTryOnEvent, CarTryOnState> {
   final CarTryOnUseCase carTryOnUseCase;
 
   CarTryOnBloc({required this.carTryOnUseCase})
-    : super(const CarTryOnInitialState()) {
-    on<TryOnCarEvent>(_onTryOn);
-    on<ResetCarTryOnEvent>(_onReset);
-  }
+    : super(CarTryOnInitialState()) {
+    // 1. معالجة حدث إرسال الصورة للذكاء الاصطناعي
+    on<TryOnCarEvent>((event, emit) async {
+      emit(const CarTryOnLoadingState());
 
-  Future<void> _onTryOn(
-    TryOnCarEvent event,
-    Emitter<CarTryOnState> emit,
-  ) async {
-    emit(const CarTryOnLoadingState());
+      print("🚀 BLoC catching TryOnCarEvent...");
+      print("📦 Product ID: ${event.productId}");
+      print("📦 Product Name: ${event.productName}");
+      print("📦 Product Image URL: ${event.productImageUrl}");
 
-    final result = await carTryOnUseCase(
-      productId: event.productId,
-      carImage: event.carImage,
-      productImageUrl: event.productImageUrl, // ✅
-    );
+      // ✅ تم الإصلاح: استدعاء الـ UseCase مباشرة كـ Callable Class بدون دالة .execute
+      final result = await carTryOnUseCase(
+        productId: event.productId,
+        productName: event.productName,
+        productImageUrl: event.productImageUrl,
+        carImage: event.carImage,
+      );
 
-    result.fold(
-      (failure) => emit(CarTryOnErrorState(failure.message)),
-      (entity) => emit(CarTryOnSuccessState(entity)),
-    );
-  }
+      // التعامل مع النتيجة القادمة
+      result.fold(
+        (failure) {
+          print("❌ BLoC received error: ${failure.message}");
+          // ✅ تم الإصلاح: تمرير الـ Parameter بدون اسم (Positional)
+          emit(CarTryOnErrorState(failure.message));
+        },
+        (carTryOnEntity) {
+          print("✅ BLoC received AI Result successfully!");
+          // ✅ تم الإصلاح: تمرير الـ Parameter بدون اسم (Positional)
+          emit(CarTryOnSuccessState(carTryOnEntity));
+        },
+      );
+    });
 
-  void _onReset(ResetCarTryOnEvent event, Emitter<CarTryOnState> emit) {
-    emit(const CarTryOnInitialState());
+    // 2. معالجة حدث إعادة التصفير (Reset)
+    on<ResetCarTryOnEvent>((event, emit) {
+      print("🔄 Resetting Car Try-On State to Initial.");
+      emit(CarTryOnInitialState());
+    });
   }
 }

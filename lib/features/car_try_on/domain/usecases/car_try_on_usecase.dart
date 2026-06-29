@@ -13,12 +13,18 @@ class CarTryOnUseCase {
   Future<Either<Failure, CarTryOnEntity>> call({
     required String productId,
     required File carImage,
-    String? productImageUrl, // ✅
+    required String
+    productImageUrl, // 🔥 تم تعديلها لتكون مطلوبًا (required) وغير قابلة للـ null
+    required String
+    productName, // 🔥 تم تعديلها لتكون مطلوبًا (required) وغير قابلة للـ null
   }) async {
+    // ✅ تمرير كافة البيانات كاملة ومؤمنة إلى الـ Repository
     return await repo.tryOnCar(
       productId: productId,
       carImage: carImage,
-      productImageUrl: productImageUrl, // ✅
+      productImageUrl: productImageUrl,
+      productName:
+          productName, // 🔥 تم تمرير الاسم بنجاح لمنع الـ null في السيرفر
     );
   }
 }

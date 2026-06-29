@@ -4,6 +4,8 @@ import 'package:graduation_project/core/utils/font_manager.dart';
 import 'package:graduation_project/core/utils/styles_manager.dart';
 import 'package:graduation_project/core/utils/values_manager.dart';
 
+import '../../../my_order/presentation/ui/my_orders_screen.dart';
+
 class ProfileMenuSection extends StatelessWidget {
   final VoidCallback onEditProfile;
   final VoidCallback onAddProduct;
@@ -55,7 +57,10 @@ class ProfileMenuSection extends StatelessWidget {
             title: "My Orders",
             subtitle: "Track your orders",
             color: const Color(0xFF0d47a1),
-            onTap: onOrders,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MyOrdersScreen()),
+            ),
           ),
           _buildDivider(),
           _ProfileMenuItem(
@@ -76,7 +81,8 @@ class ProfileMenuSection extends StatelessWidget {
       height: 1,
       thickness: 1,
       color: Colors.grey.withOpacity(0.08),
-      indent: AppPadding.p16 + AppSize.s22 + AppPadding.p10 * 2 + AppPadding.p14,
+      indent:
+          AppPadding.p16 + AppSize.s22 + AppPadding.p10 * 2 + AppPadding.p14,
     );
   }
 }

@@ -240,7 +240,7 @@ class _FavouriteScreenState extends State<FavouriteScreen>
                           ),
                         ),
                         Text(
-                          "Products you love ❤️",
+                          "Products you love ",
                           style: getRegularStyle(
                             color: Colors.white.withOpacity(0.75),
                             fontSize: FontSize.s13,

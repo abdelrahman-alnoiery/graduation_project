@@ -1,40 +1,53 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:graduation_project/core/exceptions/exceptions.dart';
-import 'package:graduation_project/core/exceptions/failuers.dart';
-import 'package:graduation_project/core/network/check_internet_connection.dart';
 
+import '../../../../core/exceptions/exceptions.dart';
+import '../../../../core/exceptions/failuers.dart';
 import '../../domain/entity/car_try_on_entity.dart';
 import '../../domain/repository/car_try_on_repo.dart';
 import '../datasources/car_try_on_remote_datasource.dart';
 
+// ⚠️ تأكد من كتابة عمل Import لكلاس فحص الإنترنت الصحيح من مشروعك إذا كان في مسار مختلف
+// import '../../../../core/network/network_info.dart';
+
 class CarTryOnRepoImpl implements CarTryOnRepo {
   final CarTryOnRemoteDatasource remoteDataSource;
-  final CheckInternetConnection networkInfo;
+  final dynamic
+  networkInfo; // ✅ إضافة البارامتر لاستقبال كلاس فحص الإنترنت لتجنب خطأ الشاشة
 
-  CarTryOnRepoImpl({required this.remoteDataSource, required this.networkInfo});
+  CarTryOnRepoImpl({
+    required this.remoteDataSource,
+    required this.networkInfo, // 🔥 تم جعلها مطلوبة كما تطلبها الـ Screen في سطر 190
+  });
 
   @override
   Future<Either<Failure, CarTryOnEntity>> tryOnCar({
     required String productId,
     required File carImage,
-    String? productImageUrl,
+    required String productImageUrl,
+    required String productName,
   }) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure(message: 'No internet connection'));
-    }
     try {
-      final result = await remoteDataSource.tryOnCar(
+      print("📦 RepoImpl passing data to RemoteDataSource...");
+      print("📦 Product Name: $productName");
+
+      // يمكنك هنا إضافة شرط الـ networkInfo.isConnected إذا كنت تستخدمه لفحص الإنترنت قبل الـ API
+
+      final carTryOnModel = await remoteDataSource.tryOnCar(
         productId: productId,
         carImage: carImage,
-        productImageUrl: productImageUrl, // ✅
+        productImageUrl: productImageUrl,
+        productName: productName,
       );
-      return Right(result);
+
+      return Right(carTryOnModel);
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(message: e.message));
+      print("❌ RepoImpl caught NetworkException: ${e.message}");
+      return Left(ServerFailure(message: e.message));
     } catch (e) {
-      return Left(NetworkFailure(message: e.toString()));
+      print("❌ RepoImpl caught Unexpected Exception: $e");
+      return Left(ServerFailure(message: e.toString()));
     }
   }
 }

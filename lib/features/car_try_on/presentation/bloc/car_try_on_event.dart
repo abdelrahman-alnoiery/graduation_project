@@ -6,13 +6,15 @@ abstract class CarTryOnEvent {
 
 class TryOnCarEvent extends CarTryOnEvent {
   final String productId;
+  final String productName;
+  final String productImageUrl;
   final File carImage;
-  final String? productImageUrl; // ✅
 
   const TryOnCarEvent({
     required this.productId,
+    required this.productName,
+    required this.productImageUrl,
     required this.carImage,
-    this.productImageUrl,
   });
 }
 
